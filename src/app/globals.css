@@ -1,48 +1,68 @@
 @import "tailwindcss";
 
 @theme {
-  /* ===== Brand palette ===== */
-  --color-ink-950: #05060a;
-  --color-ink-900: #080a11;
-  --color-ink-850: #0c0f18;
-  --color-ink-800: #11141f;
-  --color-ink-700: #1a1e2c;
-  --color-ink-600: #262b3d;
-  --color-ink-500: #3a4157;
-  --color-mist-500: #6b7488;
-  --color-mist-600: #4c5468;
-  --color-mist-400: #8b93ab;
-  --color-mist-300: #a9b0c4;
-  --color-mist-200: #ccd2e0;
-  --color-mist-100: #eef1f7;
+  /* ============================================================
+     PALET: kartun "kertas" — krem hangat, tinta gelap, warna flat
+     ============================================================ */
+  --color-paper: #fff7e9;
+  --color-paper-2: #ffeed6;
+  --color-paper-3: #ffe3c2;
+  --color-card: #ffffff;
 
-  --color-brand-50: #fff1f4;
-  --color-brand-200: #ffc2ce;
-  --color-brand-400: #ff6b8a;
-  --color-brand-500: #ff3d68;
-  --color-brand-600: #ef1e51;
-  --color-brand-700: #c80f3f;
+  --color-ink: #1e1b2e;
+  --color-ink-soft: #4a4560;
+  --color-ink-mute: #7c7691;
 
-  --color-violet-glow: #7c6bff;
-  --color-cyan-glow: #35e0d0;
-  --color-gold: #ffc453;
+  --color-coral: #ff5d5d;
+  --color-coral-dark: #e84545;
+  --color-mustard: #ffc14d;
+  --color-sky: #5ab9ff;
+  --color-mint: #4fd1a5;
+  --color-lilac: #b9a6ff;
+  --color-pink: #ff9ecb;
 
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  /* --- token lama dipetakan ulang agar komponen lama ikut tema --- */
+  --color-ink-950: #fff7e9;
+  --color-ink-900: #ffeed6;
+  --color-ink-850: #ffffff;
+  --color-ink-800: #fffdf8;
+  --color-ink-700: #ffe3c2;
+  --color-ink-600: #f0d3b4;
+  --color-ink-500: #cbb79c;
+  --color-mist-100: #1e1b2e;
+  --color-mist-200: #2b2740;
+  --color-mist-300: #4a4560;
+  --color-mist-400: #6f6883;
+  --color-mist-500: #8d86a3;
+  --color-mist-600: #aaa3bd;
+
+  --color-brand-50: #fff0ef;
+  --color-brand-200: #ffc9c9;
+  --color-brand-400: #ff7a7a;
+  --color-brand-500: #ff5d5d;
+  --color-brand-600: #e84545;
+  --color-brand-700: #c73333;
+
+  --color-violet-glow: #b9a6ff;
+  --color-cyan-glow: #4fd1a5;
+  --color-gold: #f0a51e;
+
+  --font-sans: ui-rounded, "Nunito", "Quicksand", ui-sans-serif, system-ui,
+    -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
   --radius-xl2: 1.25rem;
 
-  --animate-fade-up: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-fade-in: fade-in 0.4s ease-out both;
-  --animate-slide-down: slide-down 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-shimmer: shimmer 2.4s linear infinite;
-  --animate-pulse-ring: pulse-ring 2.6s ease-out infinite;
+  --animate-fade-up: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.3s ease-out both;
+  --animate-slide-down: slide-down 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-wiggle: wiggle 0.5s ease-in-out;
+  --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -62,7 +82,7 @@
 @keyframes slide-down {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-6px);
   }
   to {
     opacity: 1;
@@ -70,24 +90,24 @@
   }
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
+@keyframes wiggle {
+  0%,
   100% {
-    background-position: 200% 0;
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
   }
 }
 
-@keyframes pulse-ring {
+@keyframes pop {
   0% {
-    box-shadow: 0 0 0 0 rgb(255 61 104 / 0.45);
-  }
-  70% {
-    box-shadow: 0 0 0 18px rgb(255 61 104 / 0);
+    transform: scale(0.92);
+    opacity: 0;
   }
   100% {
-    box-shadow: 0 0 0 0 rgb(255 61 104 / 0);
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
@@ -98,32 +118,55 @@
   }
 
   html {
-    scroll-behavior: smooth;
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   body {
-    background-color: var(--color-ink-950);
-    color: var(--color-mist-100);
+    background-color: var(--color-paper);
+    color: var(--color-ink);
     font-family: var(--font-sans);
-    text-rendering: optimizeLegibility;
+    font-weight: 600;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+    /* titik-titik halftone, tekstur kertas komik */
+    background-image: radial-gradient(
+      var(--color-ink) 0.5px,
+      transparent 0.5px
+    );
+    background-size: 22px 22px;
+    background-attachment: fixed;
+    background-position: -10px -10px;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: var(--color-paper);
+    opacity: 0.86;
+    z-index: -1;
   }
 
   ::selection {
-    background: var(--color-brand-500);
-    color: white;
+    background: var(--color-mustard);
+    color: var(--color-ink);
   }
 
-  /* Scrollbar halus untuk rail horizontal & panel episode */
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.02em;
+    font-weight: 900;
+  }
+
   .scroll-thin {
     scrollbar-width: thin;
     scrollbar-color: var(--color-ink-600) transparent;
   }
   .scroll-thin::-webkit-scrollbar {
-    height: 6px;
-    width: 6px;
+    height: 8px;
+    width: 8px;
   }
   .scroll-thin::-webkit-scrollbar-thumb {
     background: var(--color-ink-600);
@@ -142,7 +185,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-brand-400);
+    outline: 3px solid var(--color-coral);
     outline-offset: 2px;
   }
 }
@@ -161,52 +204,82 @@
   }
 }
 
-@utility glass {
-  background: color-mix(in oklab, var(--color-ink-850) 72%, transparent);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-  border: 1px solid rgb(255 255 255 / 0.07);
+/* Kartu bergaris tebal + bayangan keras (khas kartun) */
+@utility sticker {
+  border: 2px solid var(--color-ink);
+  border-radius: 1rem;
+  box-shadow: 4px 4px 0 0 var(--color-ink);
+  background: var(--color-card);
 }
 
-@utility card-hover {
+@utility sticker-sm {
+  border: 2px solid var(--color-ink);
+  border-radius: 0.75rem;
+  box-shadow: 2px 2px 0 0 var(--color-ink);
+  background: var(--color-card);
+}
+
+@utility sticker-hover {
   transition:
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.35s ease,
-    border-color 0.35s ease;
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
   &:hover {
-    transform: translateY(-4px);
-    border-color: rgb(255 255 255 / 0.16);
-    box-shadow:
-      0 18px 40px -18px rgb(0 0 0 / 0.9),
-      0 0 0 1px rgb(255 255 255 / 0.04);
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 var(--color-ink);
   }
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 0 var(--color-ink);
+  }
+}
+
+/* Tombol utama */
+@utility btn-sticker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 2px solid var(--color-ink);
+  border-radius: 9999px;
+  font-weight: 800;
+  box-shadow: 4px 4px 0 0 var(--color-ink);
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.14s ease;
+  &:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0 0 var(--color-ink);
+  }
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 0 var(--color-ink);
+  }
+}
+
+@utility tag-sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 2px solid var(--color-ink);
+  border-radius: 9999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  box-shadow: 2px 2px 0 0 var(--color-ink);
+  background: var(--color-card);
+  color: var(--color-ink);
+}
+
+@utility tilt-l {
+  transform: rotate(-1.5deg);
+}
+@utility tilt-r {
+  transform: rotate(1.5deg);
 }
 
 @utility text-glow {
-  text-shadow: 0 0 28px rgb(255 61 104 / 0.45);
-}
-
-@utility edge-fade-x {
-  mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 3%,
-    black 97%,
-    transparent
-  );
-}
-
-@utility grain {
-  position: relative;
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.055;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
+  text-shadow: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

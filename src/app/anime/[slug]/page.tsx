@@ -91,9 +91,9 @@ export default async function AnimeDetailPage({ params }: PageProps) {
 
         <div className="container-page pt-20 sm:pt-24">
           <nav className="mb-4 flex items-center gap-1.5 text-[11px] font-semibold text-mist-400">
-            <Link href="/" className="hover:text-brand-400">Beranda</Link>
+            <Link href="/" className="hover:text-coral-dark">Beranda</Link>
             <span>/</span>
-            <Link href="/browse" className="hover:text-brand-400">Katalog</Link>
+            <Link href="/browse" className="hover:text-coral-dark">Katalog</Link>
             <span>/</span>
             <span className="truncate text-mist-300">{anime.title}</span>
           </nav>
@@ -102,7 +102,7 @@ export default async function AnimeDetailPage({ params }: PageProps) {
             <Poster
               anime={anime}
               titleSize="lg"
-              className="mx-auto w-[170px] shadow-2xl ring-1 ring-white/10 sm:mx-0 sm:w-full"
+              className="mx-auto w-[170px] shadow-2xl ring-1 ring-ink/20 sm:mx-0 sm:w-full"
             />
 
             <div className="min-w-0">
@@ -110,13 +110,13 @@ export default async function AnimeDetailPage({ params }: PageProps) {
                 <span
                   className={
                     anime.status === "ongoing"
-                      ? "rounded-full bg-brand-500 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white"
-                      : "rounded-full border border-white/15 bg-white/8 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-mist-200"
+                      ? "rounded-full bg-coral px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-ink"
+                      : "rounded-full border-2 border-ink bg-paper-2 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-mist-200"
                   }
                 >
                   {STATUS_LABEL[anime.status]}
                 </span>
-                <span className="rounded-full border border-white/12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-mist-300">
+                <span className="rounded-full border-2 border-ink px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-mist-300">
                   {anime.rating}
                 </span>
                 {anime.score > 0 && (
@@ -127,7 +127,7 @@ export default async function AnimeDetailPage({ params }: PageProps) {
                 )}
               </div>
 
-              <h1 className="mt-2.5 text-balance text-2xl font-black leading-tight tracking-tight text-white sm:text-4xl">
+              <h1 className="mt-2.5 text-balance text-2xl font-black leading-tight tracking-tight text-ink sm:text-4xl">
                 {anime.title}
               </h1>
               {anime.titleAlt && (
@@ -136,7 +136,7 @@ export default async function AnimeDetailPage({ params }: PageProps) {
                 </p>
               )}
               {anime.tagline && (
-                <p className="mt-2 text-sm font-semibold italic text-brand-200/90">
+                <p className="mt-2 text-sm font-semibold italic text-ink-soft/90">
                   “{anime.tagline}”
                 </p>
               )}
@@ -150,7 +150,7 @@ export default async function AnimeDetailPage({ params }: PageProps) {
                   <Link
                     key={g}
                     href={`/browse?genre=${encodeURIComponent(g)}`}
-                    className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold text-mist-200 transition hover:border-brand-500/50 hover:text-brand-400"
+                    className="rounded-full border-2 border-ink bg-paper-2 px-2.5 py-1 text-[11px] font-semibold text-mist-200 transition hover:border-ink hover:text-coral-dark"
                   >
                     {g}
                   </Link>
@@ -161,20 +161,20 @@ export default async function AnimeDetailPage({ params }: PageProps) {
                 {watchHref ? (
                   <Link
                     href={watchHref}
-                    className="group flex h-11 items-center gap-2 rounded-full bg-brand-500 px-6 text-sm font-bold text-white shadow-[0_14px_34px_-14px_rgba(255,61,104,1)] transition hover:bg-brand-600 active:scale-[0.98]"
+                    className="group flex h-11 items-center gap-2 rounded-full bg-coral px-6 text-sm font-bold text-ink shadow-[4px_4px_0_0_var(--color-ink)] transition hover:bg-coral-dark active:scale-[0.98]"
                   >
                     <Play className="size-4 fill-current" />
                     Tonton Ep {latestEpisode?.number}
                   </Link>
                 ) : (
-                  <span className="flex h-11 items-center gap-2 rounded-full border border-white/12 px-5 text-sm font-bold text-mist-400">
+                  <span className="flex h-11 items-center gap-2 rounded-full border-2 border-ink px-5 text-sm font-bold text-mist-400">
                     <Clock className="size-4" /> Segera tayang
                   </span>
                 )}
                 {firstEpisode && latestEpisode && latestEpisode.number !== 1 && (
                   <Link
                     href={`/watch/${anime.slug}/${firstEpisode.number}`}
-                    className="flex h-11 items-center gap-2 rounded-full border border-white/15 bg-white/8 px-5 text-sm font-bold text-mist-100 transition hover:bg-white/14"
+                    className="flex h-11 items-center gap-2 rounded-full border-2 border-ink bg-paper-2 px-5 text-sm font-bold text-ink transition hover:bg-paper-3"
                   >
                     Mulai dari Ep 1
                   </Link>
@@ -199,10 +199,10 @@ export default async function AnimeDetailPage({ params }: PageProps) {
         <section aria-labelledby="daftar-episode">
           <h2
             id="daftar-episode"
-            className="mb-3 flex items-center gap-2 text-lg font-extrabold tracking-tight text-white"
+            className="mb-3 flex items-center gap-2 text-lg font-extrabold tracking-tight text-ink"
           >
             Daftar Episode
-            <span className="rounded-full bg-white/8 px-2 py-0.5 text-[11px] font-bold text-mist-300">
+            <span className="rounded-full bg-paper-2 px-2 py-0.5 text-[11px] font-bold text-mist-300">
               {anime.episodes.length}
             </span>
           </h2>
@@ -210,7 +210,7 @@ export default async function AnimeDetailPage({ params }: PageProps) {
         </section>
 
         <aside className="space-y-4">
-          <div className="rounded-xl border border-white/8 bg-ink-850/70 p-4">
+          <div className="rounded-xl border-2 border-ink bg-card p-4 shadow-[3px_3px_0_0_var(--color-ink)]">
             <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-mist-300">
               Informasi
             </h2>
@@ -222,7 +222,7 @@ export default async function AnimeDetailPage({ params }: PageProps) {
                     <dt className="text-[10px] font-bold uppercase tracking-wider text-mist-500">
                       {label}
                     </dt>
-                    <dd className="text-[12.5px] font-semibold text-mist-100">{value}</dd>
+                    <dd className="text-[12.5px] font-semibold text-ink">{value}</dd>
                   </div>
                 </div>
               ))}
@@ -230,7 +230,7 @@ export default async function AnimeDetailPage({ params }: PageProps) {
           </div>
 
           {anime.tags && anime.tags.length > 0 && (
-            <div className="rounded-xl border border-white/8 bg-ink-850/70 p-4">
+            <div className="rounded-xl border-2 border-ink bg-card p-4 shadow-[3px_3px_0_0_var(--color-ink)]">
               <h2 className="mb-2.5 text-xs font-bold uppercase tracking-widest text-mist-300">
                 Penanda
               </h2>
@@ -238,7 +238,7 @@ export default async function AnimeDetailPage({ params }: PageProps) {
                 {anime.tags.map((t) => (
                   <span
                     key={t}
-                    className="rounded-md bg-white/6 px-2 py-1 text-[10.5px] font-semibold text-mist-300"
+                    className="rounded-md bg-paper-2 px-2 py-1 text-[10.5px] font-semibold text-mist-300"
                   >
                     {t}
                   </span>
@@ -260,7 +260,7 @@ export default async function AnimeDetailPage({ params }: PageProps) {
       {/* ===== Rekomendasi ===== */}
       {related.length > 0 && (
         <section className="container-page pt-8">
-          <h2 className="mb-3 text-lg font-extrabold tracking-tight text-white">
+          <h2 className="mb-3 text-lg font-extrabold tracking-tight text-ink">
             Mirip dengan {anime.title}
           </h2>
           <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">

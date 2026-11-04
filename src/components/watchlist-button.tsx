@@ -40,18 +40,18 @@ export function WatchlistButton({
       onClick={onClick}
       aria-pressed={saved}
       className={cn(
-        "flex h-11 items-center gap-2 rounded-full px-4 text-sm font-bold transition active:scale-[0.98]",
+        "btn-sticker h-11 px-4 text-sm",
         variant === "solid"
           ? saved
-            ? "bg-white/12 text-mist-100 ring-1 ring-white/20"
-            : "border border-white/15 bg-white/8 text-mist-100 hover:bg-white/14"
-          : "text-mist-300 hover:text-white",
+            ? "bg-mint text-ink"
+            : "bg-card text-ink"
+          : "bg-card text-ink",
       )}
     >
       {justAdded ? (
-        <Check className="size-4 text-cyan-glow" />
+        <Check className="size-4 text-ink" />
       ) : saved ? (
-        <BookmarkCheck className="size-4 text-brand-400" />
+        <BookmarkCheck className="size-4 text-ink" />
       ) : (
         <Bookmark className="size-4" />
       )}

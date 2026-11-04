@@ -58,6 +58,19 @@ Pintasan pemutar: `spasi`/`K` putar-jeda · `←`/`→` ±10 detik · `↑`/`↓
 
 ---
 
+## 3. Bahasa visual
+
+Tema **kartun kertas**: latar krem dengan titik halftone, garis tinta tebal 2px,
+bayangan keras tanpa blur, dan warna flat (coral, mustard, sky, mint, lilac).
+
+- Poster dibuat *prosedural* — ilustrasi SVG flat (matahari, bukit, ombak,
+  gedung, portal) dengan garis tepi tebal, bukan gradient/blob abstrak.
+- Tidak ada glassmorphism, glow, atau gradient-blur.
+- Sudut membulat, label gaya stiker, dan tipografi tebal.
+- Palet & bentuk didefinisikan sebagai token di `src/app/globals.css`
+  (`--color-paper`, `--color-ink`, `--color-coral`, dst.) serta utility
+  `sticker`, `btn-sticker`, `tag-sticker`.
+
 ## 3. Arsitektur
 
 ```

@@ -58,8 +58,15 @@ export function SectionRail({
     <section className={cn("relative", className)}>
       <div className="mb-3 flex items-end justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-white sm:text-xl">
-            {accent && <span aria-hidden className="text-xl">{accent}</span>}
+          <h2 className="flex items-center gap-2 text-lg font-black tracking-tight text-ink sm:text-xl">
+            {accent && (
+              <span
+                aria-hidden
+                className="grid size-7 place-items-center rounded-lg border-2 border-ink bg-mustard text-[13px] shadow-[2px_2px_0_0_var(--color-ink)]"
+              >
+                {accent}
+              </span>
+            )}
             {title}
           </h2>
           {subtitle && (
@@ -71,7 +78,7 @@ export function SectionRail({
           {href && (
             <Link
               href={href}
-              className="group hidden items-center gap-1 text-xs font-semibold text-mist-300 transition-colors hover:text-brand-400 sm:flex"
+              className="group hidden items-center gap-1 rounded-full border-2 border-ink bg-card px-3 py-1 text-xs font-extrabold text-ink shadow-[2px_2px_0_0_var(--color-ink)] transition hover:-translate-y-0.5 sm:flex"
             >
               Lihat semua
               <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -84,7 +91,7 @@ export function SectionRail({
                 onClick={() => scrollBy(-1)}
                 disabled={atStart}
                 aria-label="Geser ke kiri"
-                className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-mist-200 transition enabled:hover:border-white/25 enabled:hover:bg-white/10 disabled:opacity-30"
+                className="flex size-8 items-center justify-center rounded-full border-2 border-ink bg-paper-2 text-mist-200 transition enabled:hover:border-ink/40 enabled:hover:bg-paper-3 disabled:opacity-30"
               >
                 <ChevronLeft className="size-4" />
               </button>
@@ -93,7 +100,7 @@ export function SectionRail({
                 onClick={() => scrollBy(1)}
                 disabled={atEnd}
                 aria-label="Geser ke kanan"
-                className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-mist-200 transition enabled:hover:border-white/25 enabled:hover:bg-white/10 disabled:opacity-30"
+                className="flex size-8 items-center justify-center rounded-full border-2 border-ink bg-paper-2 text-mist-200 transition enabled:hover:border-ink/40 enabled:hover:bg-paper-3 disabled:opacity-30"
               >
                 <ChevronRight className="size-4" />
               </button>

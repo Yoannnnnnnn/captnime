@@ -15,13 +15,12 @@ const TABS = [
 export function MobileTabBar() {
   const pathname = usePathname();
 
-  // Player butuh ruang penuh — sembunyikan tab bar saat menonton.
   if (pathname.startsWith("/watch/")) return null;
 
   return (
     <nav
       aria-label="Navigasi bawah"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/8 bg-ink-950/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-ink bg-paper pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       <ul className="grid grid-cols-4">
         {TABS.map((tab) => {
@@ -33,15 +32,19 @@ export function MobileTabBar() {
               <Link
                 href={tab.href}
                 className={cn(
-                  "flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold transition-colors",
-                  active ? "text-brand-400" : "text-mist-400",
+                  "flex flex-col items-center gap-1 py-2.5 text-[10px] font-extrabold transition-colors",
+                  active ? "text-coral-dark" : "text-ink-mute",
                 )}
               >
-                <span className="relative">
-                  <Icon className="size-[18px]" />
-                  {active && (
-                    <span className="absolute -top-1.5 left-1/2 size-1 -translate-x-1/2 rounded-full bg-brand-500" />
+                <span
+                  className={cn(
+                    "grid size-7 place-items-center rounded-lg border-2 transition",
+                    active
+                      ? "border-ink bg-mustard text-ink shadow-[2px_2px_0_0_var(--color-ink)]"
+                      : "border-transparent",
                   )}
+                >
+                  <Icon className="size-4" />
                 </span>
                 {tab.label}
               </Link>

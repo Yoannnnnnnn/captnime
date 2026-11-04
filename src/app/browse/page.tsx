@@ -68,10 +68,10 @@ export default async function BrowsePage({
   return (
     <div className="container-page pt-20 sm:pt-24">
       <header className="mb-5">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-400">
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-coral-dark">
           Katalog
         </p>
-        <h1 className="mt-1 text-2xl font-black tracking-tight text-white sm:text-3xl">
+        <h1 className="mt-1 text-2xl font-black tracking-tight text-ink sm:text-3xl">
           {heading}
         </h1>
         <p className="mt-1 text-[13px] text-mist-400">
@@ -84,11 +84,11 @@ export default async function BrowsePage({
 
       <div className="mt-6">
         {result.items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-white/8 bg-ink-850/60 px-6 py-16 text-center">
-            <span className="grid size-12 place-items-center rounded-full bg-white/5 text-mist-400">
+          <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-ink bg-card px-6 py-16 text-center">
+            <span className="grid size-12 place-items-center rounded-full bg-paper-2 text-mist-400">
               <SearchX className="size-6" />
             </span>
-            <h2 className="mt-3 text-base font-bold text-white">
+            <h2 className="mt-3 text-base font-bold text-ink">
               Tidak ada anime yang cocok
             </h2>
             <p className="mt-1 max-w-sm text-[13px] leading-relaxed text-mist-400">
@@ -97,7 +97,7 @@ export default async function BrowsePage({
             </p>
             <Link
               href="/browse"
-              className="mt-4 rounded-full bg-brand-500 px-5 py-2.5 text-[13px] font-bold text-white transition hover:bg-brand-600"
+              className="mt-4 rounded-full bg-coral px-5 py-2.5 text-[13px] font-bold text-ink transition hover:bg-coral-dark"
             >
               Reset filter
             </Link>
@@ -142,8 +142,8 @@ export default async function BrowsePage({
                     className={cn(
                       "grid size-9 place-items-center rounded-lg text-[13px] font-bold transition",
                       p === result.page
-                        ? "bg-brand-500 text-white"
-                        : "border border-white/10 bg-white/5 text-mist-200 hover:bg-white/10",
+                        ? "bg-coral text-ink"
+                        : "border-2 border-ink bg-paper-2 text-mist-200 hover:bg-paper-3",
                     )}
                   >
                     {p}
@@ -181,7 +181,7 @@ function PageLink({
       <span
         aria-disabled
         aria-label={label}
-        className="grid size-9 place-items-center rounded-lg border border-white/8 text-mist-500 opacity-40"
+        className="grid size-9 place-items-center rounded-lg border-2 border-ink text-mist-500 opacity-40"
       >
         {children}
       </span>
@@ -191,7 +191,7 @@ function PageLink({
     <Link
       href={href}
       aria-label={label}
-      className="grid size-9 place-items-center rounded-lg border border-white/10 bg-white/5 text-mist-200 transition hover:bg-white/10"
+      className="grid size-9 place-items-center rounded-lg border-2 border-ink bg-paper-2 text-mist-200 transition hover:bg-paper-3"
     >
       {children}
     </Link>

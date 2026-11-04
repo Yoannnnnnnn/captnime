@@ -39,7 +39,7 @@ export default async function HomePage() {
               <Link
                 key={g.slug}
                 href={`/browse?genre=${encodeURIComponent(g.name)}`}
-                className="card-hover flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-[12px] font-semibold text-mist-200 hover:text-white"
+                className="sticker-hover flex shrink-0 items-center gap-1.5 rounded-full border-2 border-ink bg-paper-2 px-3.5 py-2 text-[12px] font-semibold text-mist-200 hover:text-ink"
               >
                 <span aria-hidden className="text-[13px]">
                   {GENRE_ICONS[g.name] ?? "✧"}
@@ -76,14 +76,14 @@ export default async function HomePage() {
 
         {/* Highlight banner */}
         {baru[0] && (
-          <section className="relative overflow-hidden rounded-2xl border border-white/8">
+          <section className="relative overflow-hidden rounded-2xl border-2 border-ink">
             <div className="grid gap-4 p-4 sm:grid-cols-[200px_1fr] sm:gap-6 sm:p-6">
               <Poster anime={baru[0]} className="aspect-[2/3] w-full max-w-[200px]" />
               <div className="flex flex-col justify-center">
                 <span className="mb-2 flex w-fit items-center gap-1.5 rounded-full bg-cyan-glow/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-cyan-glow">
                   <Sparkles className="size-3" /> Rilis Terbaru
                 </span>
-                <h2 className="text-balance text-xl font-black tracking-tight text-white sm:text-2xl">
+                <h2 className="text-balance text-xl font-black tracking-tight text-ink sm:text-2xl">
                   {baru[0].title}
                 </h2>
                 <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-mist-300">
@@ -100,13 +100,13 @@ export default async function HomePage() {
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link
                     href={`/watch/${baru[0].slug}/${baru[0].episodes.at(-1)?.number ?? 1}`}
-                    className="flex h-10 items-center gap-2 rounded-full bg-brand-500 px-5 text-[13px] font-bold text-white transition hover:bg-brand-600"
+                    className="flex h-10 items-center gap-2 rounded-full bg-coral px-5 text-[13px] font-bold text-ink transition hover:bg-coral-dark"
                   >
                     Tonton Episode Terbaru
                   </Link>
                   <Link
                     href={`/anime/${baru[0].slug}`}
-                    className="flex h-10 items-center gap-1.5 rounded-full border border-white/15 px-4 text-[13px] font-bold text-mist-200 transition hover:bg-white/8"
+                    className="flex h-10 items-center gap-1.5 rounded-full border-2 border-ink px-4 text-[13px] font-bold text-mist-200 transition hover:bg-paper-2"
                   >
                     Detail <ArrowRight className="size-3.5" />
                   </Link>
@@ -186,12 +186,12 @@ export default async function HomePage() {
           ].map(({ icon: Icon, title, body }) => (
             <div
               key={title}
-              className="rounded-xl border border-white/8 bg-ink-850/60 p-4 transition hover:border-white/16"
+              className="rounded-xl border-2 border-ink bg-card p-4 shadow-[3px_3px_0_0_var(--color-ink)] transition hover:border-ink/30"
             >
-              <span className="mb-2 grid size-9 place-items-center rounded-lg bg-brand-500/15 text-brand-400">
+              <span className="mb-2 grid size-9 place-items-center rounded-lg bg-coral/15 text-coral-dark">
                 <Icon className="size-4" />
               </span>
-              <h3 className="text-sm font-bold text-white">{title}</h3>
+              <h3 className="text-sm font-bold text-ink">{title}</h3>
               <p className="mt-1 text-[12px] leading-relaxed text-mist-400">{body}</p>
             </div>
           ))}

@@ -42,7 +42,7 @@ export function EpisodeList({
 
   if (anime.episodes.length === 0) {
     return (
-      <div className="rounded-xl border border-white/8 bg-ink-850/60 p-5 text-center text-sm text-mist-400">
+      <div className="rounded-xl border-2 border-ink bg-card p-5 text-center text-sm text-mist-400">
         Episode belum tersedia — anime ini belum mulai tayang.
       </div>
     );
@@ -52,21 +52,21 @@ export function EpisodeList({
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         {variant === "page" && (
-          <label className="flex h-9 flex-1 items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-2.5">
+          <label className="flex h-9 flex-1 items-center gap-2 rounded-lg border-2 border-ink bg-paper-2 px-2.5">
             <Search className="size-3.5 shrink-0 text-mist-400" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Cari episode…"
               aria-label="Cari episode"
-              className="h-full w-full bg-transparent text-[13px] text-mist-100 placeholder:text-mist-400/80 focus:outline-none"
+              className="h-full w-full bg-transparent text-[13px] text-ink placeholder:text-mist-400/80 focus:outline-none"
             />
           </label>
         )}
         <button
           type="button"
           onClick={() => setReversed((r) => !r)}
-          className="ml-auto shrink-0 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[11px] font-semibold text-mist-300 transition hover:bg-white/10"
+          className="ml-auto shrink-0 rounded-lg border-2 border-ink bg-paper-2 px-2.5 py-1.5 text-[11px] font-semibold text-mist-300 transition hover:bg-paper-3"
         >
           {reversed ? "Terlama → Terbaru" : "Terbaru → Terlama"}
         </button>
@@ -94,7 +94,7 @@ export function EpisodeList({
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 text-xs font-bold text-mist-200 transition hover:bg-white/10"
+          className="w-full rounded-xl border-2 border-ink bg-paper-2 py-2.5 text-xs font-bold text-mist-200 transition hover:bg-paper-3"
         >
           Lihat semua {episodes.length} episode
         </button>
@@ -131,8 +131,8 @@ function EpisodeRow({
         className={cn(
           "group flex items-center gap-3 rounded-xl border p-2.5 transition",
           active
-            ? "border-brand-500/60 bg-brand-500/10"
-            : "border-white/8 bg-ink-850/70 hover:border-white/20 hover:bg-ink-800",
+            ? "border-ink bg-coral/10"
+            : "border-ink/20 bg-card hover:border-ink/30 hover:bg-ink-800",
         )}
       >
         <span
@@ -140,8 +140,8 @@ function EpisodeRow({
             "grid shrink-0 place-items-center rounded-lg text-[11px] font-black",
             compact ? "size-9" : "size-11",
             active
-              ? "bg-brand-500 text-white"
-              : "bg-white/8 text-mist-200 group-hover:bg-white/14",
+              ? "bg-coral text-ink"
+              : "bg-paper-2 text-mist-200 group-hover:bg-paper-3",
           )}
         >
           {done ? (
@@ -155,17 +155,17 @@ function EpisodeRow({
 
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5">
-            <span className="truncate text-[13px] font-semibold text-mist-100">
+            <span className="truncate text-[13px] font-semibold text-ink">
               Ep {episode.number}
               {!compact && ` — ${episode.title}`}
             </span>
             {episode.filler && (
-              <span className="shrink-0 rounded bg-white/10 px-1 py-0.5 text-[9px] font-bold text-mist-300">
+              <span className="shrink-0 rounded bg-paper-3 px-1 py-0.5 text-[9px] font-bold text-mist-300">
                 FILLER
               </span>
             )}
             {active && (
-              <span className="shrink-0 rounded bg-brand-500 px-1 py-0.5 text-[9px] font-bold text-white">
+              <span className="shrink-0 rounded bg-coral px-1 py-0.5 text-[9px] font-bold text-ink">
                 SEDANG DITONTON
               </span>
             )}
@@ -177,14 +177,14 @@ function EpisodeRow({
             {progress > 0 && !done && (
               <>
                 <span className="size-0.5 rounded-full bg-mist-500" />
-                <span className="text-brand-400">{progress}%</span>
+                <span className="text-coral-dark">{progress}%</span>
               </>
             )}
           </span>
           {progress > 0 && !done && (
             <span className="mt-1.5 block h-0.5 overflow-hidden rounded-full bg-white/15">
               <span
-                className="block h-full rounded-full bg-brand-500"
+                className="block h-full rounded-full bg-coral"
                 style={{ width: `${progress}%` }}
               />
             </span>
@@ -192,7 +192,7 @@ function EpisodeRow({
         </span>
 
         {compact && active ? (
-          <PlayCircle className="size-4 shrink-0 text-brand-400" />
+          <PlayCircle className="size-4 shrink-0 text-coral-dark" />
         ) : (
           <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-mist-400 opacity-0 transition group-hover:opacity-100">
             Tonton

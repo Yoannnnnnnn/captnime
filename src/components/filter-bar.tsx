@@ -68,14 +68,14 @@ export function FilterBar({ genres }: { genres: GenreInfo[] }) {
     <div className="space-y-3">
       <div className="flex gap-2">
         <form onSubmit={submitSearch} className="flex-1">
-          <label className="flex h-11 items-center gap-2 rounded-xl border border-white/10 bg-ink-850 px-3 transition focus-within:border-brand-500/60">
+          <label className="flex h-11 items-center gap-2 rounded-xl border-2 border-ink bg-ink-850 px-3 transition focus-within:border-ink">
             <Search className="size-4 shrink-0 text-mist-400" />
             <input
               value={term}
               onChange={(e) => setTerm(e.target.value)}
               placeholder="Cari judul, genre, atau studio…"
               aria-label="Cari anime"
-              className="h-full w-full bg-transparent text-sm text-mist-100 placeholder:text-mist-400/80 focus:outline-none"
+              className="h-full w-full bg-transparent text-sm text-ink placeholder:text-mist-400/80 focus:outline-none"
             />
             {term && (
               <button
@@ -85,7 +85,7 @@ export function FilterBar({ genres }: { genres: GenreInfo[] }) {
                   push({ q: undefined });
                 }}
                 aria-label="Hapus pencarian"
-                className="grid size-6 place-items-center rounded-full bg-white/10 text-mist-300"
+                className="grid size-6 place-items-center rounded-full bg-paper-3 text-mist-300"
               >
                 <X className="size-3" />
               </button>
@@ -100,8 +100,8 @@ export function FilterBar({ genres }: { genres: GenreInfo[] }) {
           className={cn(
             "relative flex h-11 items-center gap-2 rounded-xl border px-3.5 text-sm font-bold transition",
             showFilters || activeCount > 0
-              ? "border-brand-500/60 bg-brand-500/12 text-brand-400"
-              : "border-white/10 bg-ink-850 text-mist-200 hover:bg-ink-800",
+              ? "border-ink bg-coral/12 text-coral-dark"
+              : "border-ink/20 bg-ink-850 text-mist-200 hover:bg-ink-800",
           )}
         >
           {isPending ? (
@@ -111,7 +111,7 @@ export function FilterBar({ genres }: { genres: GenreInfo[] }) {
           )}
           Filter
           {activeCount > 0 && (
-            <span className="grid size-4 place-items-center rounded-full bg-brand-500 text-[9px] font-black text-white">
+            <span className="grid size-4 place-items-center rounded-full bg-coral text-[9px] font-black text-ink">
               {activeCount}
             </span>
           )}
@@ -119,7 +119,7 @@ export function FilterBar({ genres }: { genres: GenreInfo[] }) {
       </div>
 
       {showFilters && (
-        <div className="animate-slide-down space-y-4 rounded-xl border border-white/8 bg-ink-850/80 p-4">
+        <div className="animate-slide-down space-y-4 rounded-xl border-2 border-ink bg-ink-850/80 p-4">
           <Field label="Status">
             <div className="flex flex-wrap gap-1.5">
               {STATUS_OPTIONS.map((opt) => (
@@ -221,8 +221,8 @@ function Chip({
       className={cn(
         "shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition",
         active
-          ? "border-brand-500/70 bg-brand-500/15 text-brand-400"
-          : "border-white/10 bg-white/[0.04] text-mist-300 hover:border-white/25 hover:text-white",
+          ? "border-ink bg-coral/15 text-coral-dark"
+          : "border-ink/20 bg-paper-2 text-mist-300 hover:border-ink/40 hover:text-ink",
       )}
     >
       {children}

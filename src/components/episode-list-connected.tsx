@@ -36,7 +36,7 @@ export function EpisodeListConnected({
   return (
     <div className="space-y-3">
       {resume && resume.position > 10 && (
-        <p className="rounded-lg border border-brand-500/25 bg-brand-500/8 px-3 py-2 text-[12px] text-brand-200">
+        <p className="rounded-lg border border-ink/30 bg-coral/8 px-3 py-2 text-[12px] text-ink-soft">
           Terakhir ditonton: Episode {resume.episode} (
           {watchPercent(resume.position, resume.duration)}%)
         </p>

@@ -27,10 +27,10 @@ export default async function SchedulePage() {
   return (
     <div className="container-page pt-20 sm:pt-24">
       <header className="mb-6">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-400">
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-coral-dark">
           Jadwal
         </p>
-        <h1 className="mt-1 text-2xl font-black tracking-tight text-white sm:text-3xl">
+        <h1 className="mt-1 text-2xl font-black tracking-tight text-ink sm:text-3xl">
           Jadwal Rilis Mingguan
         </h1>
         <p className="mt-1 text-[13px] text-mist-400">
@@ -48,15 +48,15 @@ export default async function SchedulePage() {
               className={cn(
                 "rounded-2xl border p-4",
                 isToday
-                  ? "border-brand-500/40 bg-brand-500/[0.06]"
-                  : "border-white/8 bg-ink-850/50",
+                  ? "border-ink/40 bg-coral/[0.06]"
+                  : "border-ink/20 bg-card",
               )}
             >
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="flex items-center gap-2 text-sm font-extrabold text-white">
+                <h2 className="flex items-center gap-2 text-sm font-extrabold text-ink">
                   {day}
                   {isToday && (
-                    <span className="rounded-full bg-brand-500 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white">
+                    <span className="rounded-full bg-coral px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-ink">
                       Hari ini
                     </span>
                   )}
@@ -67,7 +67,7 @@ export default async function SchedulePage() {
               </div>
 
               {items.length === 0 ? (
-                <p className="rounded-lg bg-white/[0.03] px-3 py-6 text-center text-[12px] text-mist-500">
+                <p className="rounded-lg bg-paper-2 px-3 py-6 text-center text-[12px] text-mist-500">
                   Tidak ada rilis hari ini.
                 </p>
               ) : (
@@ -76,7 +76,7 @@ export default async function SchedulePage() {
                     <li key={anime.slug}>
                       <Link
                         href={`/anime/${anime.slug}`}
-                        className="group flex items-center gap-3 rounded-xl border border-transparent p-1.5 transition hover:border-white/12 hover:bg-white/[0.04]"
+                        className="group flex items-center gap-3 rounded-xl border border-transparent p-1.5 transition hover:border-ink/25 hover:bg-paper-2"
                       >
                         <Poster
                           anime={anime}
@@ -85,7 +85,7 @@ export default async function SchedulePage() {
                           className="w-10 shrink-0"
                         />
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[13px] font-semibold text-mist-100 group-hover:text-brand-400">
+                          <span className="block truncate text-[13px] font-semibold text-ink group-hover:text-coral-dark">
                             {anime.title}
                           </span>
                           <span className="flex items-center gap-1.5 text-[11px] text-mist-400">
@@ -95,7 +95,7 @@ export default async function SchedulePage() {
                             Ep {padEpisode(anime.episodes.length)} rilis
                           </span>
                         </span>
-                        <span className="shrink-0 rounded-md bg-white/6 px-1.5 py-0.5 text-[10px] font-bold text-mist-300">
+                        <span className="shrink-0 rounded-md bg-paper-2 px-1.5 py-0.5 text-[10px] font-bold text-mist-300">
                           {anime.episodes.length}/{anime.totalEpisodes}
                         </span>
                       </Link>

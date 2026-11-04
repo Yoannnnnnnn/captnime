@@ -37,8 +37,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#05060a",
-  colorScheme: "dark",
+  themeColor: "#fff7e9",
+  colorScheme: "light",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -49,10 +49,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id" className="scroll-smooth">
-      <body className="min-h-dvh bg-ink-950 text-mist-100 antialiased">
+      <body className="min-h-dvh bg-paper text-ink antialiased">
         <a
           href="#konten"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-lg focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-lg focus:bg-coral focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-ink"
         >
           Lompat ke konten
         </a>
