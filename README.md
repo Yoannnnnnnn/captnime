@@ -17,7 +17,18 @@ npm install
 npm run dev      # http://localhost:3000
 npm run build && npm start   # produksi
 npm run typecheck            # cek tipe
+npm run clean                # buang cache .next & .next-build
 ```
+
+Host dan port bisa diatur lewat env (default `0.0.0.0:3000`):
+
+```bash
+HOST=:: PORT=3000 npm start   # dual-stack IPv4 + IPv6
+```
+
+Pakai `HOST=::` bila aplikasi dijalankan di belakang reverse proxy / preview
+sandbox yang menghubungi `localhost` lewat IPv6 (`::1`). Server Next yang hanya
+bind IPv4 membuat proxy gagal konek dan mengembalikan **502 Bad Gateway**.
 
 Tidak perlu konfigurasi apa pun — katalog demo sudah terisi.
 

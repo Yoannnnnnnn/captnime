@@ -4,9 +4,9 @@
   "private": true,
   "description": "Captnime — platform streaming anime modern (Next.js + TypeScript)",
   "scripts": {
-    "dev": "next dev -H 0.0.0.0 -p 3000",
+    "dev": "next dev -H ${HOST:-0.0.0.0} -p ${PORT:-3000}",
     "build": "NEXT_DIST_DIR=.next-build next build",
-    "start": "NEXT_DIST_DIR=.next-build next start -H 0.0.0.0 -p 3000",
+    "start": "NEXT_DIST_DIR=.next-build next start -H ${HOST:-0.0.0.0} -p ${PORT:-3000}",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next .next-build"
