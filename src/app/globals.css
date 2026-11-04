@@ -1,0 +1,281 @@
+@import "tailwindcss";
+
+@theme {
+  /* ============================================================
+     TEMA: gelap sinematik (pola Crunchyroll / Netflix)
+     Netral gelap berlapis, satu aksen emas, border 1px, tanpa glow.
+     ============================================================ */
+  --color-bg: #08090d;
+  --color-surface: #12141a;
+  --color-surface-2: #191c24;
+  --color-surface-3: #22262f;
+
+  --color-line: #262a35;
+  --color-line-2: #343a48;
+
+  --color-text: #f3f5f9;
+  --color-text-2: #a6adbd;
+  --color-text-3: #6d7486;
+
+  --color-gold: #ffb020;
+  --color-gold-2: #e6990b;
+  --color-mint: #3ddc97;
+  --color-coral: #ff5c6c;
+  --color-sky: #58a6ff;
+
+  /* --- alias token lama agar komponen lain ikut tema ini --- */
+  --color-paper: #08090d;
+  --color-paper-2: #12141a;
+  --color-paper-3: #191c24;
+  --color-card: #12141a;
+
+  --color-ink: #f3f5f9;
+  --color-ink-soft: #a6adbd;
+  --color-ink-mute: #6d7486;
+
+  --color-ink-950: #08090d;
+  --color-ink-900: #12141a;
+  --color-ink-850: #12141a;
+  --color-ink-800: #191c24;
+  --color-ink-700: #22262f;
+  --color-ink-600: #262a35;
+  --color-ink-500: #343a48;
+
+  --color-mist-100: #f3f5f9;
+  --color-mist-200: #d7dce6;
+  --color-mist-300: #a6adbd;
+  --color-mist-400: #8a92a3;
+  --color-mist-500: #6d7486;
+  --color-mist-600: #565d6e;
+
+  --color-brand-50: #2a2213;
+  --color-brand-200: #ffd88a;
+  --color-brand-400: #ffc352;
+  --color-brand-500: #ffb020;
+  --color-brand-600: #e6990b;
+  --color-brand-700: #c98600;
+
+  --color-violet-glow: #b9a6ff;
+  --color-cyan-glow: #3ddc97;
+  --color-gold-ink: #08090d;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.3s ease-out both;
+  --animate-slide-down: slide-down 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-slow-zoom: slow-zoom 18s ease-out both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slow-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+/* ===== Base ===== */
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--color-gold);
+    color: var(--color-bg);
+  }
+
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.015em;
+  }
+
+  .scroll-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-2) transparent;
+  }
+  .scroll-thin::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+  .scroll-thin::-webkit-scrollbar-thumb {
+    background: var(--color-line-2);
+    border-radius: 9999px;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+  }
+}
+
+/* ===== Utilities ===== */
+@utility container-page {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 84rem;
+  padding-inline: 1rem;
+  @media (min-width: 768px) {
+    padding-inline: 1.5rem;
+  }
+  @media (min-width: 1280px) {
+    padding-inline: 2rem;
+  }
+}
+
+/* Kartu permukaan: border 1px, radius kecil, elevasi via warna */
+@utility sticker {
+  border: 1px solid var(--color-line);
+  border-radius: 0.75rem;
+  background: var(--color-surface);
+}
+
+@utility sticker-sm {
+  border: 1px solid var(--color-line);
+  border-radius: 0.5rem;
+  background: var(--color-surface);
+}
+
+/* Interaksi kartu: naik tipis + border lebih terang (pola Netflix hover) */
+@utility sticker-hover {
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.25s ease,
+    background-color 0.25s ease;
+  &:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-line-2);
+    background: var(--color-surface-2);
+  }
+}
+
+/* Tombol utama */
+@utility btn-sticker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.6rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease;
+  &:active {
+    transform: scale(0.985);
+  }
+}
+
+/* Label kecil */
+@utility tag-sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 0.375rem;
+  padding: 0.15rem 0.45rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid var(--color-line);
+  background: color-mix(in oklab, var(--color-surface-2) 80%, transparent);
+  color: var(--color-text-2);
+}
+
+@utility tilt-l {
+  transform: none;
+}
+@utility tilt-r {
+  transform: none;
+}
+@utility text-glow {
+  text-shadow: none;
+}
+
+/* Scrim untuk teks di atas gambar (arah bawah, seperti app streaming) */
+@utility scrim-b {
+  background: linear-gradient(
+    to top,
+    var(--color-bg) 0%,
+    color-mix(in oklab, var(--color-bg) 78%, transparent) 35%,
+    transparent 100%
+  );
+}
+
+@utility scrim-l {
+  background: linear-gradient(
+    to right,
+    color-mix(in oklab, var(--color-bg) 94%, transparent) 0%,
+    color-mix(in oklab, var(--color-bg) 62%, transparent) 45%,
+    transparent 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
