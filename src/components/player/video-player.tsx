@@ -487,7 +487,7 @@ export function VideoPlayer({
           <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center">
             <div className="flex flex-col items-center gap-2 rounded-2xl bg-black/50 px-5 py-4 backdrop-blur-sm">
               <Loader2 className="size-6 animate-spin text-brand-400" />
-              <span className="text-[11px] font-semibold text-mist-200">
+              <span className="text-[11px] font-semibold text-text">
                 Memuat {server?.quality ?? ""} • {server?.label ?? "server"}
               </span>
             </div>
@@ -499,7 +499,7 @@ export function VideoPlayer({
           <div className="absolute inset-0 z-20 grid place-items-center bg-black/80 p-6 text-center">
             <div className="max-w-sm">
               <p className="text-sm font-bold text-white">Tidak bisa memutar video</p>
-              <p className="mt-1 text-xs leading-relaxed text-mist-300">{error}</p>
+              <p className="mt-1 text-xs leading-relaxed text-text-2">{error}</p>
               <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
                 <button
                   type="button"
@@ -521,12 +521,12 @@ export function VideoPlayer({
                       void video.play().catch(() => undefined);
                     }
                   }}
-                  className="flex items-center gap-1.5 rounded-full border border-white/20 px-4 py-2 text-xs font-bold text-mist-200"
+                  className="flex items-center gap-1.5 rounded-full border border-white/20 px-4 py-2 text-xs font-bold text-text"
                 >
                   <RotateCcw className="size-3.5" /> Coba lagi
                 </button>
               </div>
-              <p className="mt-3 text-[10px] leading-relaxed text-mist-500">
+              <p className="mt-3 text-[10px] leading-relaxed text-text-3">
                 Video demo memakai sample stream publik, jadi butuh koneksi
                 internet. Pada implementasi produksi, sumber ini diganti CDN Anda.
               </p>
@@ -537,7 +537,7 @@ export function VideoPlayer({
         {/* Resume prompt */}
         {resumeFrom !== null && (
           <div className="absolute inset-x-3 bottom-24 z-20 mx-auto flex max-w-md items-center gap-3 rounded-xl border border-white/15 bg-ink-850/95 p-3 shadow-xl backdrop-blur">
-            <p className="flex-1 text-[12px] leading-snug text-mist-200">
+            <p className="flex-1 text-[12px] leading-snug text-text">
               Lanjutkan dari{" "}
               <span className="font-bold text-white">{formatDuration(resumeFrom)}</span>?
             </p>
@@ -552,7 +552,7 @@ export function VideoPlayer({
               type="button"
               onClick={() => setResumeFrom(null)}
               aria-label="Tutup"
-              className="grid size-7 place-items-center rounded-full bg-white/10 text-mist-300"
+              className="grid size-7 place-items-center rounded-full bg-white/10 text-text-2"
             >
               <X className="size-3.5" />
             </button>
@@ -562,7 +562,7 @@ export function VideoPlayer({
         {/* Auto next */}
         {ended && nextHref && (
           <div className="absolute inset-x-3 bottom-24 z-20 mx-auto flex max-w-md items-center gap-3 rounded-xl border border-white/15 bg-ink-850/95 p-3 shadow-xl backdrop-blur">
-            <p className="flex-1 text-[12px] leading-snug text-mist-200">
+            <p className="flex-1 text-[12px] leading-snug text-text">
               Episode berikutnya dalam{" "}
               <span className="font-bold text-brand-400">{autoNextCountdown ?? 0}</span>{" "}
               detik
@@ -578,7 +578,7 @@ export function VideoPlayer({
               type="button"
               onClick={() => setAutoNextCountdown(null)}
               aria-label="Batal"
-              className="grid size-7 place-items-center rounded-full bg-white/10 text-mist-300"
+              className="grid size-7 place-items-center rounded-full bg-white/10 text-text-2"
             >
               <X className="size-3.5" />
             </button>
@@ -636,7 +636,7 @@ export function VideoPlayer({
               type="button"
               onClick={() => skip(-10)}
               aria-label="Mundur 10 detik"
-              className="hidden size-8 place-items-center rounded-full text-mist-200 transition hover:bg-white/10 hover:text-white sm:grid"
+              className="hidden size-8 place-items-center rounded-full text-text transition hover:bg-white/10 hover:text-white sm:grid"
             >
               <SkipBack className="size-4" />
             </button>
@@ -644,7 +644,7 @@ export function VideoPlayer({
               type="button"
               onClick={() => skip(10)}
               aria-label="Maju 10 detik"
-              className="hidden size-8 place-items-center rounded-full text-mist-200 transition hover:bg-white/10 hover:text-white sm:grid"
+              className="hidden size-8 place-items-center rounded-full text-text transition hover:bg-white/10 hover:text-white sm:grid"
             >
               <SkipForward className="size-4" />
             </button>
@@ -654,7 +654,7 @@ export function VideoPlayer({
                 type="button"
                 onClick={toggleMute}
                 aria-label={muted ? "Bunyikan" : "Bisukan"}
-                className="grid size-8 place-items-center rounded-full text-mist-200 transition hover:bg-white/10 hover:text-white"
+                className="grid size-8 place-items-center rounded-full text-text transition hover:bg-white/10 hover:text-white"
               >
                 {muted || volume === 0 ? (
                   <VolumeX className="size-4" />
@@ -676,9 +676,9 @@ export function VideoPlayer({
               />
             </div>
 
-            <span className="ml-0.5 font-mono text-[11px] font-semibold tabular-nums text-mist-200">
+            <span className="ml-0.5 font-mono text-[11px] font-semibold tabular-nums text-text">
               {formatDuration(currentTime)}{" "}
-              <span className="text-mist-500">/ {formatDuration(duration)}</span>
+              <span className="text-text-3">/ {formatDuration(duration)}</span>
             </span>
 
             <div className="ml-auto flex items-center gap-0.5 sm:gap-1">
@@ -697,7 +697,7 @@ export function VideoPlayer({
                 aria-pressed={subtitlesOn}
                 className={cn(
                   "grid size-8 place-items-center rounded-full transition hover:bg-white/10",
-                  subtitlesOn ? "text-brand-400" : "text-mist-300",
+                  subtitlesOn ? "text-brand-400" : "text-text-2",
                 )}
               >
                 <Subtitles className="size-4" />
@@ -708,7 +708,7 @@ export function VideoPlayer({
                 type="button"
                 onClick={() => setPanel((p) => (p === "settings" ? "none" : "settings"))}
                 aria-label="Pengaturan"
-                className="grid size-8 place-items-center rounded-full text-mist-200 transition hover:bg-white/10 hover:text-white"
+                className="grid size-8 place-items-center rounded-full text-text transition hover:bg-white/10 hover:text-white"
               >
                 <Settings className="size-4" />
               </button>
@@ -717,7 +717,7 @@ export function VideoPlayer({
                 type="button"
                 onClick={() => void togglePip()}
                 aria-label="Picture in picture"
-                className="hidden size-8 place-items-center rounded-full text-mist-200 transition hover:bg-white/10 hover:text-white sm:grid"
+                className="hidden size-8 place-items-center rounded-full text-text transition hover:bg-white/10 hover:text-white sm:grid"
               >
                 <PictureInPicture2 className="size-4" />
               </button>
@@ -726,7 +726,7 @@ export function VideoPlayer({
                 type="button"
                 onClick={() => void toggleFullscreen()}
                 aria-label={fullscreen ? "Keluar layar penuh" : "Layar penuh"}
-                className="grid size-8 place-items-center rounded-full text-mist-200 transition hover:bg-white/10 hover:text-white"
+                className="grid size-8 place-items-center rounded-full text-text transition hover:bg-white/10 hover:text-white"
               >
                 {fullscreen ? (
                   <Minimize className="size-4" />
@@ -741,7 +741,7 @@ export function VideoPlayer({
         {/* ===================== Panel subtitle ===================== */}
         {panel === "subtitle" && (
           <div className="absolute bottom-16 right-3 z-40 w-56 rounded-xl border border-white/12 bg-ink-850/97 p-2 shadow-2xl backdrop-blur sm:right-4">
-            <p className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-mist-400">
+            <p className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-2">
               Subtitle
             </p>
             <button
@@ -752,7 +752,7 @@ export function VideoPlayer({
               }}
               className={cn(
                 "flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-[12px] font-semibold transition hover:bg-white/8",
-                !subtitlesOn ? "text-brand-400" : "text-mist-200",
+                !subtitlesOn ? "text-brand-400" : "text-text",
               )}
             >
               Nonaktif {!subtitlesOn && "✓"}
@@ -770,11 +770,11 @@ export function VideoPlayer({
                   "flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-[12px] font-semibold transition hover:bg-white/8",
                   subtitlesOn && activeSubtitle?.lang === sub.lang
                     ? "text-brand-400"
-                    : "text-mist-200",
+                    : "text-text",
                 )}
               >
                 {sub.label}
-                <span className="text-[10px] uppercase text-mist-500">{sub.lang}</span>
+                <span className="text-[10px] uppercase text-text-3">{sub.lang}</span>
               </button>
             ))}
           </div>
@@ -784,7 +784,7 @@ export function VideoPlayer({
         {panel === "settings" && (
           <div className="absolute bottom-16 right-3 z-40 w-60 rounded-xl border border-white/12 bg-ink-850/97 p-2 shadow-2xl backdrop-blur sm:right-4">
             <div className="px-2 pb-1 pt-1">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-mist-400">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-text-2">
                 Kecepatan
               </p>
               <div className="mt-1.5 flex flex-wrap gap-1">
@@ -801,7 +801,7 @@ export function VideoPlayer({
                       "rounded-md px-2 py-1 text-[11px] font-bold transition",
                       speed === s
                         ? "bg-brand-500 text-white"
-                        : "bg-white/8 text-mist-200 hover:bg-white/14",
+                        : "bg-white/8 text-text hover:bg-white/14",
                     )}
                   >
                     {s}×
@@ -811,16 +811,16 @@ export function VideoPlayer({
             </div>
 
             <div className="mt-2 border-t border-white/8 px-2 pb-1 pt-2">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-mist-400">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-text-2">
                 Kualitas
               </p>
-              <p className="mt-1 text-[11px] leading-snug text-mist-300">
+              <p className="mt-1 text-[11px] leading-snug text-text-2">
                 Mengikuti server aktif:{" "}
                 <span className="font-bold text-white">
                   {server?.quality ?? "auto"}
                 </span>
               </p>
-              <p className="mt-1 text-[10px] leading-relaxed text-mist-500">
+              <p className="mt-1 text-[10px] leading-relaxed text-text-3">
                 Ganti kualitas dengan memilih server lain di bawah pemutar.
               </p>
             </div>
@@ -831,11 +831,11 @@ export function VideoPlayer({
       {/* ===================== Bar server ===================== */}
       <div className="rounded-xl border border-white/8 bg-ink-850/70 p-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-bold uppercase tracking-widest text-mist-400">
+          <span className="text-[11px] font-bold uppercase tracking-widest text-text-2">
             Server
           </span>
           {episode.servers.length === 0 && (
-            <span className="text-[12px] text-mist-400">Belum ada sumber video.</span>
+            <span className="text-[12px] text-text-2">Belum ada sumber video.</span>
           )}
           {episode.servers.map((s, i) => (
             <button
@@ -846,11 +846,11 @@ export function VideoPlayer({
                 "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold transition",
                 i === serverIndex
                   ? "border-brand-500/70 bg-brand-500/15 text-brand-400"
-                  : "border-white/10 bg-white/5 text-mist-200 hover:border-white/25 hover:bg-white/10",
+                  : "border-white/10 bg-white/5 text-text hover:border-white/25 hover:bg-white/10",
               )}
             >
               {s.label}
-              <span className="rounded bg-white/10 px-1 py-0.5 text-[9px] uppercase text-mist-300">
+              <span className="rounded bg-white/10 px-1 py-0.5 text-[9px] uppercase text-text-2">
                 {s.quality}
               </span>
             </button>
@@ -865,7 +865,7 @@ export function VideoPlayer({
       </div>
 
       {/* Info episode kecil */}
-      <p className="px-1 text-[11px] text-mist-500">
+      <p className="px-1 text-[11px] text-text-3">
         Pintasan: <kbd className="rounded bg-white/8 px-1">spasi</kbd> putar/jeda ·{" "}
         <kbd className="rounded bg-white/8 px-1">←</kbd>
         <kbd className="rounded bg-white/8 px-1">→</kbd> ±10s ·{" "}

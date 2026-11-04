@@ -68,13 +68,13 @@ export default async function BrowsePage({
   return (
     <div className="container-page pt-20 sm:pt-24">
       <header className="mb-5">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-coral-dark">
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gold">
           Katalog
         </p>
-        <h1 className="mt-1 text-2xl font-black tracking-tight text-ink sm:text-3xl">
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-text sm:text-3xl">
           {heading}
         </h1>
-        <p className="mt-1 text-[13px] text-mist-400">
+        <p className="mt-1 text-[13px] text-text-2">
           {result.total} judul ditemukan
           {result.totalPages > 1 && ` • halaman ${result.page} dari ${result.totalPages}`}
         </p>
@@ -84,20 +84,20 @@ export default async function BrowsePage({
 
       <div className="mt-6">
         {result.items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-ink bg-card px-6 py-16 text-center">
-            <span className="grid size-12 place-items-center rounded-full bg-paper-2 text-mist-400">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-line bg-surface px-6 py-16 text-center">
+            <span className="grid size-12 place-items-center rounded-full bg-surface text-text-2">
               <SearchX className="size-6" />
             </span>
-            <h2 className="mt-3 text-base font-bold text-ink">
+            <h2 className="mt-3 text-base font-bold text-text">
               Tidak ada anime yang cocok
             </h2>
-            <p className="mt-1 max-w-sm text-[13px] leading-relaxed text-mist-400">
+            <p className="mt-1 max-w-sm text-[13px] leading-relaxed text-text-2">
               Coba kata kunci lain, atau longgarkan filter genre dan status yang
               sedang aktif.
             </p>
             <Link
               href="/browse"
-              className="mt-4 rounded-full bg-coral px-5 py-2.5 text-[13px] font-bold text-ink transition hover:bg-coral-dark"
+              className="mt-4 rounded-md bg-gold px-5 py-2.5 text-[13px] font-bold text-bg transition hover:bg-gold-2"
             >
               Reset filter
             </Link>
@@ -135,15 +135,15 @@ export default async function BrowsePage({
               const gap = idx > 0 && p - arr[idx - 1] > 1;
               return (
                 <span key={p} className="flex items-center gap-1.5">
-                  {gap && <span className="px-1 text-mist-500">…</span>}
+                  {gap && <span className="px-1 text-text-3">…</span>}
                   <Link
                     href={buildHref(p)}
                     aria-current={p === result.page ? "page" : undefined}
                     className={cn(
                       "grid size-9 place-items-center rounded-lg text-[13px] font-bold transition",
                       p === result.page
-                        ? "bg-coral text-ink"
-                        : "border-2 border-ink bg-paper-2 text-mist-200 hover:bg-paper-3",
+                        ? "bg-gold text-bg"
+                        : "border border-line bg-surface text-text hover:bg-surface-2",
                     )}
                   >
                     {p}
@@ -181,7 +181,7 @@ function PageLink({
       <span
         aria-disabled
         aria-label={label}
-        className="grid size-9 place-items-center rounded-lg border-2 border-ink text-mist-500 opacity-40"
+        className="grid size-9 place-items-center rounded-lg border border-line text-text-3 opacity-40"
       >
         {children}
       </span>
@@ -191,7 +191,7 @@ function PageLink({
     <Link
       href={href}
       aria-label={label}
-      className="grid size-9 place-items-center rounded-lg border-2 border-ink bg-paper-2 text-mist-200 transition hover:bg-paper-3"
+      className="grid size-9 place-items-center rounded-lg border border-line bg-surface text-text transition hover:bg-surface-2"
     >
       {children}
     </Link>

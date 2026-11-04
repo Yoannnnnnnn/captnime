@@ -27,13 +27,13 @@ export default async function SchedulePage() {
   return (
     <div className="container-page pt-20 sm:pt-24">
       <header className="mb-6">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-coral-dark">
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gold">
           Jadwal
         </p>
-        <h1 className="mt-1 text-2xl font-black tracking-tight text-ink sm:text-3xl">
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-text sm:text-3xl">
           Jadwal Rilis Mingguan
         </h1>
-        <p className="mt-1 text-[13px] text-mist-400">
+        <p className="mt-1 text-[13px] text-text-2">
           {totalOngoing} judul sedang tayang • jadwal mengikuti WIB
         </p>
       </header>
@@ -48,26 +48,26 @@ export default async function SchedulePage() {
               className={cn(
                 "rounded-2xl border p-4",
                 isToday
-                  ? "border-ink/40 bg-coral/[0.06]"
-                  : "border-ink/20 bg-card",
+                  ? "border-line-2 bg-gold/[0.06]"
+                  : "border-line bg-surface",
               )}
             >
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="flex items-center gap-2 text-sm font-extrabold text-ink">
+                <h2 className="flex items-center gap-2 text-sm font-extrabold text-text">
                   {day}
                   {isToday && (
-                    <span className="rounded-full bg-coral px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-ink">
+                    <span className="rounded-full bg-gold px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-bg">
                       Hari ini
                     </span>
                   )}
                 </h2>
-                <span className="text-[11px] font-semibold text-mist-500">
+                <span className="text-[11px] font-semibold text-text-3">
                   {items.length} judul
                 </span>
               </div>
 
               {items.length === 0 ? (
-                <p className="rounded-lg bg-paper-2 px-3 py-6 text-center text-[12px] text-mist-500">
+                <p className="rounded-lg bg-surface px-3 py-6 text-center text-[12px] text-text-3">
                   Tidak ada rilis hari ini.
                 </p>
               ) : (
@@ -76,7 +76,7 @@ export default async function SchedulePage() {
                     <li key={anime.slug}>
                       <Link
                         href={`/anime/${anime.slug}`}
-                        className="group flex items-center gap-3 rounded-xl border border-transparent p-1.5 transition hover:border-ink/25 hover:bg-paper-2"
+                        className="group flex items-center gap-3 rounded-xl border border-transparent p-1.5 transition hover:border-line hover:bg-surface"
                       >
                         <Poster
                           anime={anime}
@@ -85,17 +85,17 @@ export default async function SchedulePage() {
                           className="w-10 shrink-0"
                         />
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[13px] font-semibold text-ink group-hover:text-coral-dark">
+                          <span className="block truncate text-[13px] font-semibold text-text group-hover:text-gold">
                             {anime.title}
                           </span>
-                          <span className="flex items-center gap-1.5 text-[11px] text-mist-400">
+                          <span className="flex items-center gap-1.5 text-[11px] text-text-2">
                             <Clock3 className="size-3" />
                             {anime.broadcastTime ?? "—"}
-                            <span className="size-0.5 rounded-full bg-mist-500" />
+                            <span className="size-0.5 rounded-full bg-text-3" />
                             Ep {padEpisode(anime.episodes.length)} rilis
                           </span>
                         </span>
-                        <span className="shrink-0 rounded-md bg-paper-2 px-1.5 py-0.5 text-[10px] font-bold text-mist-300">
+                        <span className="shrink-0 rounded-md bg-surface px-1.5 py-0.5 text-[10px] font-bold text-text-2">
                           {anime.episodes.length}/{anime.totalEpisodes}
                         </span>
                       </Link>

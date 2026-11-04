@@ -6,15 +6,15 @@ export function Logo({ className }: { className?: string }) {
     <Link
       href="/"
       aria-label="Captnime — kembali ke beranda"
-      className={cn("group flex items-center gap-2", className)}
+      className={cn("flex items-center gap-2", className)}
     >
-      <span className="grid size-8 place-items-center rounded-xl border-2 border-ink bg-coral shadow-[3px_3px_0_0_var(--color-ink)] transition-transform group-hover:-rotate-6">
+      <span className="grid size-8 place-items-center rounded-md bg-gold">
         <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
-          <path d="M9 6.5v11l8.5-5.5L9 6.5Z" fill="white" />
+          <path d="M9 6.5v11l8.5-5.5L9 6.5Z" fill="#08090d" />
         </svg>
       </span>
-      <span className="text-[17px] font-black tracking-tight text-ink">
-        capt<span className="text-coral-dark">nime</span>
+      <span className="text-[17px] font-bold tracking-tight text-text">
+        captnime
       </span>
     </Link>
   );

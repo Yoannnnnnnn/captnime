@@ -43,15 +43,15 @@ export function WatchlistButton({
         "btn-sticker h-11 px-4 text-sm",
         variant === "solid"
           ? saved
-            ? "bg-mint text-ink"
-            : "bg-card text-ink"
-          : "bg-card text-ink",
+            ? "bg-mint text-text"
+            : "bg-surface text-text"
+          : "bg-surface text-text",
       )}
     >
       {justAdded ? (
-        <Check className="size-4 text-ink" />
+        <Check className="size-4 text-text" />
       ) : saved ? (
-        <BookmarkCheck className="size-4 text-ink" />
+        <BookmarkCheck className="size-4 text-text" />
       ) : (
         <Bookmark className="size-4" />
       )}

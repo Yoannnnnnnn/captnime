@@ -23,7 +23,7 @@ export function SiteHeader() {
   const [term, setTerm] = useState("");
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => setScrolled(window.scrollY > 10);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -54,14 +54,16 @@ export function SiteHeader() {
     <>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b-2 border-ink transition-colors duration-200",
-          scrolled ? "bg-paper" : "bg-paper/92 backdrop-blur-sm",
+          "fixed inset-x-0 top-0 z-50 transition-all duration-300",
+          scrolled
+            ? "border-b border-line bg-bg/92 backdrop-blur-md"
+            : "border-b border-transparent bg-gradient-to-b from-bg/85 to-transparent",
         )}
       >
-        <div className="container-page flex h-16 items-center gap-3">
+        <div className="container-page flex h-16 items-center gap-4">
           <Logo />
 
-          <nav className="ml-3 hidden items-center gap-1.5 lg:flex" aria-label="Navigasi utama">
+          <nav className="hidden items-center gap-0.5 md:flex" aria-label="Navigasi utama">
             {NAV.map((item) => {
               const active =
                 item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
@@ -70,28 +72,29 @@ export function SiteHeader() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "rounded-full border-2 px-3.5 py-1.5 text-[13px] font-extrabold transition",
-                    active
-                      ? "border-ink bg-mustard text-ink shadow-[2px_2px_0_0_var(--color-ink)]"
-                      : "border-transparent text-ink-soft hover:border-ink hover:bg-card",
+                    "relative rounded px-3 py-2 text-[13px] font-medium transition-colors",
+                    active ? "text-text" : "text-text-2 hover:text-text",
                   )}
                 >
                   {item.label}
+                  {active && (
+                    <span className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-gold" />
+                  )}
                 </Link>
               );
             })}
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
-            <form onSubmit={submit} className="hidden md:block">
-              <label className="flex h-9 w-56 items-center gap-2 rounded-full border-2 border-ink bg-card pl-3 transition-all focus-within:w-72">
-                <Search className="size-4 shrink-0 text-ink-soft" />
+            <form onSubmit={submit} className="hidden sm:block">
+              <label className="flex h-9 w-52 items-center gap-2 rounded-md border border-line bg-surface/80 pl-2.5 transition-colors focus-within:border-line-2 focus-within:bg-surface">
+                <Search className="size-4 shrink-0 text-text-3" />
                 <input
                   value={term}
                   onChange={(e) => setTerm(e.target.value)}
-                  placeholder="Cari anime…"
+                  placeholder="Cari anime"
                   aria-label="Cari anime"
-                  className="h-full w-full bg-transparent pr-3 text-[13px] font-semibold text-ink placeholder:text-ink-mute focus:outline-none"
+                  className="h-full w-full bg-transparent pr-2.5 text-[13px] text-text placeholder:text-text-3 focus:outline-none"
                 />
               </label>
             </form>
@@ -101,14 +104,14 @@ export function SiteHeader() {
               onClick={() => setSearchOpen((v) => !v)}
               aria-label="Cari"
               aria-expanded={searchOpen}
-              className="grid size-9 place-items-center rounded-full border-2 border-ink bg-card text-ink md:hidden"
+              className="grid size-9 place-items-center rounded-md border border-line text-text-2 sm:hidden"
             >
               {searchOpen ? <X className="size-4" /> : <Search className="size-4" />}
             </button>
 
             <Link
               href="/my-list"
-              className="hidden h-9 items-center gap-1.5 rounded-full border-2 border-ink bg-coral px-4 text-[13px] font-extrabold text-ink shadow-[3px_3px_0_0_var(--color-ink)] transition hover:-translate-y-0.5 sm:flex"
+              className="hidden h-9 items-center gap-1.5 rounded-md bg-gold px-3.5 text-[13px] font-semibold text-bg transition-colors hover:bg-gold-2 md:flex"
             >
               <Bookmark className="size-3.5" />
               Daftar Saya
@@ -118,7 +121,7 @@ export function SiteHeader() {
               type="button"
               onClick={() => setMenuOpen(true)}
               aria-label="Buka menu"
-              className="grid size-9 place-items-center rounded-full border-2 border-ink bg-card text-ink lg:hidden"
+              className="grid size-9 place-items-center rounded-md border border-line text-text-2 md:hidden"
             >
               <Menu className="size-4" />
             </button>
@@ -126,22 +129,22 @@ export function SiteHeader() {
         </div>
 
         {searchOpen && (
-          <div className="animate-slide-down border-t-2 border-ink bg-paper px-4 pb-3 pt-2 md:hidden">
+          <div className="animate-slide-down border-t border-line bg-bg px-4 pb-3 pt-2 sm:hidden">
             <form onSubmit={submit} className="flex items-center gap-2">
-              <label className="flex h-10 flex-1 items-center gap-2 rounded-xl border-2 border-ink bg-card px-3">
-                <Search className="size-4 text-ink-soft" />
+              <label className="flex h-10 flex-1 items-center gap-2 rounded-md border border-line bg-surface px-3">
+                <Search className="size-4 text-text-3" />
                 <input
                   autoFocus
                   value={term}
                   onChange={(e) => setTerm(e.target.value)}
-                  placeholder="Cari judul, genre, atau studio…"
+                  placeholder="Cari judul, genre, atau studio"
                   aria-label="Cari anime"
-                  className="h-full w-full bg-transparent text-sm font-semibold text-ink placeholder:text-ink-mute focus:outline-none"
+                  className="h-full w-full bg-transparent text-sm text-text placeholder:text-text-3 focus:outline-none"
                 />
               </label>
               <button
                 type="submit"
-                className="h-10 rounded-xl border-2 border-ink bg-coral px-4 text-sm font-extrabold text-ink shadow-[3px_3px_0_0_var(--color-ink)]"
+                className="h-10 rounded-md bg-gold px-4 text-sm font-semibold text-bg"
               >
                 Cari
               </button>
@@ -151,26 +154,26 @@ export function SiteHeader() {
       </header>
 
       {menuOpen && (
-        <div className="fixed inset-0 z-[60] lg:hidden">
+        <div className="fixed inset-0 z-[60] md:hidden">
           <button
             type="button"
             aria-label="Tutup menu"
             onClick={() => setMenuOpen(false)}
-            className="absolute inset-0 bg-ink/60"
+            className="absolute inset-0 bg-bg/80 backdrop-blur-sm"
           />
-          <div className="animate-slide-down absolute inset-x-3 top-3 rounded-2xl border-2 border-ink bg-paper p-4 shadow-[6px_6px_0_0_var(--color-ink)]">
+          <div className="animate-slide-down absolute inset-x-3 top-3 rounded-xl border border-line bg-surface p-4">
             <div className="flex items-center justify-between">
               <Logo />
               <button
                 type="button"
                 onClick={() => setMenuOpen(false)}
                 aria-label="Tutup"
-                className="grid size-9 place-items-center rounded-full border-2 border-ink bg-card text-ink"
+                className="grid size-9 place-items-center rounded-md border border-line text-text-2"
               >
                 <X className="size-4" />
               </button>
             </div>
-            <nav className="mt-4 space-y-1.5" aria-label="Navigasi seluler">
+            <nav className="mt-4 space-y-0.5" aria-label="Navigasi seluler">
               {NAV.map((item) => {
                 const Icon = item.icon;
                 const active =
@@ -180,10 +183,8 @@ export function SiteHeader() {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-sm font-extrabold transition",
-                      active
-                        ? "border-ink bg-mustard text-ink"
-                        : "border-transparent text-ink-soft hover:border-ink hover:bg-card",
+                      "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                      active ? "bg-surface-2 text-text" : "text-text-2 hover:bg-surface-2",
                     )}
                   >
                     <Icon className="size-4" />
@@ -192,7 +193,7 @@ export function SiteHeader() {
                 );
               })}
             </nav>
-            <p className="mt-4 border-t-2 border-dashed border-ink/25 pt-3 text-[11px] font-semibold leading-relaxed text-ink-mute">
+            <p className="mt-4 border-t border-line pt-3 text-[11px] leading-relaxed text-text-3">
               Captnime menyajikan katalog orisinal. Lapisan provider bisa diarahkan
               ke sumber resmi berlisensi milik Anda.
             </p>

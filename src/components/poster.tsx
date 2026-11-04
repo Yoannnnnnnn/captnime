@@ -1,14 +1,11 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Poster kartun: ilustrasi flat yang dibangkitkan dari palet tiap judul.
+ * Poster prosedural: key art minimal dari palet tiap judul.
  *
- * Tidak ada file gambar dan tidak ada gradient-blur. Bentuknya sengaja sederhana
- * — lingkaran, bukit, ombak, gedung — dengan garis tepi tebal supaya terasa
- * digambar tangan, bukan hasil generator.
+ * Untuk tema gelap sinematik, bentuknya dibuat lapang dengan garis tipis
+ * transparan (bukan outline tebal) supaya terbaca sebagai artwork, bukan ikon.
  */
-
-const OUTLINE = "#fff7e9";
 
 function hash(input: string): number {
   let h = 0;
@@ -18,6 +15,8 @@ function hash(input: string): number {
   return h;
 }
 
+const STROKE = "rgba(255,255,255,0.22)";
+
 interface SceneProps {
   variant: number;
   from: string;
@@ -25,10 +24,9 @@ interface SceneProps {
   seed: number;
 }
 
-/** Adegan 200x300: sederhana, tebal, lucu. */
 function Scene({ variant, from, to, seed }: SceneProps) {
-  const sunX = 60 + (seed % 80);
-  const sunY = 55 + (seed % 30);
+  const cx = 50 + (seed % 70);
+  const cy = 62 + (seed % 26);
 
   return (
     <svg
@@ -37,118 +35,113 @@ function Scene({ variant, from, to, seed }: SceneProps) {
       className="absolute inset-0 h-full w-full"
       aria-hidden
     >
-      <rect width="200" height="300" fill={from} />
+      <defs>
+        <linearGradient id={`sky-${seed}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={from} stopOpacity="0.95" />
+          <stop offset="100%" stopColor={from} stopOpacity="0.45" />
+        </linearGradient>
+        <radialGradient id={`glow-${seed}`} cx="50%" cy="30%" r="65%">
+          <stop offset="0%" stopColor={to} stopOpacity="0.55" />
+          <stop offset="100%" stopColor={to} stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      <rect width="200" height="300" fill="#0b0d13" />
+      <rect width="200" height="300" fill={`url(#sky-${seed})`} opacity="0.55" />
+      <rect width="200" height="300" fill={`url(#glow-${seed})`} />
 
       {variant === 0 && (
         <>
-          <circle cx={sunX} cy={sunY} r="34" fill={to} stroke={OUTLINE} strokeWidth="5" />
+          <circle cx={cx} cy={cy} r="30" fill={to} opacity="0.9" />
+          <circle cx={cx} cy={cy} r="44" fill="none" stroke={STROKE} strokeWidth="1" />
           <path
-            d="M-10 300 Q 50 190 110 300 Z"
-            fill={to}
-            stroke={OUTLINE}
-            strokeWidth="5"
+            d={`M-10 300 Q ${60 + (seed % 30)} 205 120 300 Z`}
+            fill="#0b0d13"
+            opacity="0.72"
           />
           <path
-            d="M70 300 Q 140 205 210 300 Z"
+            d={`M80 300 Q 150 215 215 300 Z`}
             fill={from}
-            stroke={OUTLINE}
-            strokeWidth="5"
-            opacity="0.85"
+            opacity="0.5"
+            stroke={STROKE}
+            strokeWidth="1"
           />
-          <circle cx={sunX + 62} cy={sunY + 34} r="5" fill={OUTLINE} />
-          <circle cx={sunX - 58} cy={sunY + 70} r="3.5" fill={OUTLINE} />
         </>
       )}
 
       {variant === 1 && (
         <>
-          <path
-            d={`M ${sunX} ${sunY - 26} a 26 26 0 1 0 0.1 0 Z`}
-            fill={to}
-            stroke={OUTLINE}
-            strokeWidth="5"
-          />
-          <path
-            d={`M ${sunX + 10} ${sunY - 34} a 24 24 0 1 0 8 45 Z`}
-            fill={from}
-          />
+          <circle cx={cx} cy={cy} r="26" fill={to} opacity="0.92" />
+          <circle cx={cx + 12} cy={cy - 6} r="24" fill="#0b0d13" opacity="0.9" />
           {[
-            [30, 60],
-            [168, 96],
-            [54, 128],
-            [140, 42],
-            [96, 84],
+            [32, 58],
+            [166, 92],
+            [58, 122],
+            [138, 40],
           ].map(([x, y], i) => (
-            <path
-              key={i}
-              d={`M ${x} ${y - 7} l 2.6 5.4 6 0.7 -4.4 4.1 1.2 6 -5.4 -3 -5.4 3 1.2 -6 -4.4 -4.1 6 -0.7 Z`}
-              fill={OUTLINE}
-            />
+            <circle key={i} cx={x} cy={y} r="1.6" fill="#ffffff" opacity="0.8" />
           ))}
-          <path
-            d="M-10 300 L 40 205 L 90 300 Z M 70 300 L 130 190 L 195 300 Z"
-            fill={to}
-            stroke={OUTLINE}
-            strokeWidth="5"
-          />
+          <path d="M-10 300 L 44 208 L 96 300 Z" fill="#0b0d13" opacity="0.8" />
+          <path d="M70 300 L 132 196 L 200 300 Z" fill={to} opacity="0.35" stroke={STROKE} strokeWidth="1" />
         </>
       )}
 
       {variant === 2 && (
         <>
-          <circle cx={sunX} cy={sunY} r="28" fill={to} stroke={OUTLINE} strokeWidth="5" />
+          <circle cx={cx} cy={cy} r="24" fill={to} opacity="0.85" />
           <path
-            d="M-10 190 q 26 -18 52 0 t 52 0 t 52 0 t 52 0 V 300 H -10 Z"
+            d="M-10 196 q 26 -14 52 0 t 52 0 t 52 0 t 52 0 V 300 H -10 Z"
             fill={to}
-            stroke={OUTLINE}
-            strokeWidth="5"
+            opacity="0.32"
+            stroke={STROKE}
+            strokeWidth="1"
           />
           <path
-            d="M-10 230 q 26 -18 52 0 t 52 0 t 52 0 t 52 0 V 300 H -10 Z"
-            fill={from}
-            stroke={OUTLINE}
-            strokeWidth="5"
-            opacity="0.9"
+            d="M-10 236 q 26 -14 52 0 t 52 0 t 52 0 t 52 0 V 300 H -10 Z"
+            fill="#0b0d13"
+            opacity="0.72"
           />
-          <path d="M40 165 q8 -12 16 0 q8 -12 16 0" stroke={OUTLINE} strokeWidth="4" fill="none" />
         </>
       )}
 
       {variant === 3 && (
         <>
-          <rect x="24" y="150" width="42" height="150" fill={to} stroke={OUTLINE} strokeWidth="5" />
-          <rect x="78" y="110" width="46" height="190" fill={from} stroke={OUTLINE} strokeWidth="5" />
-          <rect x="136" y="175" width="44" height="125" fill={to} stroke={OUTLINE} strokeWidth="5" />
-          <circle cx={sunX} cy={sunY} r="26" fill={to} stroke={OUTLINE} strokeWidth="5" />
+          <circle cx={cx} cy={cy - 10} r="22" fill={to} opacity="0.8" />
+          <rect x="26" y="168" width="34" height="132" fill="#0b0d13" opacity="0.9" />
+          <rect x="70" y="132" width="40" height="168" fill={from} opacity="0.75" />
+          <rect x="120" y="186" width="36" height="114" fill="#0b0d13" opacity="0.9" />
           {[
-            [34, 170],
-            [50, 170],
-            [88, 130],
-            [104, 130],
-            [88, 158],
-            [104, 158],
-            [146, 195],
-            [162, 195],
+            [34, 180],
+            [46, 180],
+            [78, 146],
+            [90, 146],
+            [78, 170],
+            [90, 170],
+            [128, 198],
+            [140, 198],
           ].map(([x, y], i) => (
-            <rect key={i} x={x} y={y} width="10" height="12" fill={from} stroke={OUTLINE} strokeWidth="3" />
+            <rect key={i} x={x} y={y} width="7" height="9" fill={to} opacity="0.85" />
           ))}
         </>
       )}
 
       {variant === 4 && (
         <>
-          <circle cx="100" cy="120" r="66" fill="none" stroke={OUTLINE} strokeWidth="6" />
-          <circle cx="100" cy="120" r="46" fill="none" stroke={to} strokeWidth="10" />
-          <circle cx="100" cy="120" r="22" fill={to} stroke={OUTLINE} strokeWidth="5" />
-          <path
-            d="M-10 300 Q 60 210 120 300 Z"
-            fill={to}
-            stroke={OUTLINE}
-            strokeWidth="5"
-          />
-          <path d="M150 40 l 4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4 Z" fill={to} stroke={OUTLINE} strokeWidth="3" />
+          <circle cx="100" cy="118" r="62" fill="none" stroke={STROKE} strokeWidth="1" />
+          <circle cx="100" cy="118" r="40" fill="none" stroke={to} strokeWidth="7" opacity="0.85" />
+          <circle cx="100" cy="118" r="16" fill={to} opacity="0.95" />
+          <path d="M-10 300 Q 62 224 120 300 Z" fill="#0b0d13" opacity="0.8" />
         </>
       )}
+
+      {/* vignette */}
+      <rect width="200" height="300" fill="url(#vig)" />
+      <defs>
+        <radialGradient id="vig" cx="50%" cy="45%" r="72%">
+          <stop offset="60%" stopColor="#000" stopOpacity="0" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0.45" />
+        </radialGradient>
+      </defs>
     </svg>
   );
 }
@@ -170,9 +163,9 @@ interface PosterProps {
 }
 
 const TITLE_SIZE = {
-  sm: "text-[10px] leading-[1.15]",
-  md: "text-[11.5px] leading-[1.2] sm:text-[13px]",
-  lg: "text-sm leading-[1.2] sm:text-base",
+  sm: "text-[10.5px] leading-tight",
+  md: "text-[12px] leading-tight",
+  lg: "text-sm leading-tight sm:text-base",
 } as const;
 
 export function Poster({
@@ -180,7 +173,7 @@ export function Poster({
   className,
   hideTitle = false,
   titleSize = "md",
-  rounded = "rounded-xl",
+  rounded = "rounded-lg",
   priority = false,
 }: PosterProps) {
   const [from, to] = anime.palette;
@@ -188,14 +181,7 @@ export function Poster({
   const variant = seed % 5;
 
   return (
-    <div
-      className={cn(
-        "relative isolate overflow-hidden border-2 border-ink bg-ink",
-        rounded,
-        className,
-      )}
-      style={{ boxShadow: "4px 4px 0 0 var(--color-ink)" }}
-    >
+    <div className={cn("relative isolate overflow-hidden bg-surface", rounded, className)}>
       {anime.poster ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -209,24 +195,25 @@ export function Poster({
       )}
 
       {!hideTitle && (
-        <div className="absolute inset-x-1.5 bottom-1.5">
-          <div className="rounded-lg border-2 border-ink bg-paper px-1.5 py-1">
+        <>
+          <span aria-hidden className="scrim-b absolute inset-x-0 bottom-0 h-1/2" />
+          <div className="absolute inset-x-0 bottom-0 p-2.5">
             {anime.type && (
-              <span className="mb-0.5 block text-[8px] font-black uppercase tracking-[0.12em] text-ink-mute">
+              <span className="mb-0.5 block text-[8.5px] font-semibold uppercase tracking-[0.14em] text-text-2">
                 {anime.type}
               </span>
             )}
-            <h3 className={cn("font-black text-ink", TITLE_SIZE[titleSize])}>
+            <h3 className={cn("font-semibold text-text", TITLE_SIZE[titleSize])}>
               {anime.title}
             </h3>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
 }
 
-/** Latar lebar untuk hero & halaman detail — langit kartun, bukan gradient gelap. */
+/** Latar lebar untuk hero & header halaman detail. */
 export function Backdrop({
   anime,
   className,
@@ -240,53 +227,79 @@ export function Backdrop({
   className?: string;
 }) {
   const [from, to] = anime.palette;
-  const seed = hash(anime.title ?? "x");
+  const seed = hash(anime.title ?? "captnime");
 
   return (
     <div className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}>
       {anime.banner ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={anime.banner} alt="" className="h-full w-full object-cover opacity-90" />
-          <div className="absolute inset-0 bg-paper/80" />
+          <img
+            src={anime.banner}
+            alt=""
+            className="animate-slow-zoom h-full w-full object-cover"
+          />
         </>
       ) : (
         <svg
-          viewBox="0 0 1200 600"
+          viewBox="0 0 1440 720"
           preserveAspectRatio="xMidYMid slice"
           className="h-full w-full"
           aria-hidden
         >
-          <rect width="1200" height="600" fill="var(--color-paper)" />
-          <circle cx={900 + (seed % 120)} cy="150" r="150" fill={to} stroke="#1e1b2e" strokeWidth="6" />
-          <path
-            d="M-40 600 Q 220 330 520 600 Z"
-            fill={from}
-            stroke="#1e1b2e"
-            strokeWidth="6"
-            opacity="0.95"
-          />
-          <path
-            d="M380 600 Q 700 380 1040 600 Z"
+          <defs>
+            <linearGradient id="heroSky" x1="0" y1="0" x2="0.4" y2="1">
+              <stop offset="0%" stopColor={from} stopOpacity="0.85" />
+              <stop offset="100%" stopColor="#0b0d13" stopOpacity="1" />
+            </linearGradient>
+            <radialGradient id="heroGlow" cx="72%" cy="34%" r="48%">
+              <stop offset="0%" stopColor={to} stopOpacity="0.7" />
+              <stop offset="100%" stopColor={to} stopOpacity="0" />
+            </radialGradient>
+          </defs>
+
+          <rect width="1440" height="720" fill="#0b0d13" />
+          <rect width="1440" height="720" fill="url(#heroSky)" />
+          <rect width="1440" height="720" fill="url(#heroGlow)" />
+
+          <circle
+            cx={1040 + (seed % 90)}
+            cy="210"
+            r="150"
             fill={to}
-            stroke="#1e1b2e"
-            strokeWidth="6"
-            opacity="0.8"
+            opacity="0.22"
+            stroke="rgba(255,255,255,0.16)"
+            strokeWidth="1.5"
+          />
+
+          {/* siluet lanskap */}
+          <path
+            d="M-40 720 L 260 380 L 520 720 Z"
+            fill="#0b0d13"
+            opacity="0.85"
           />
           <path
-            d="M0 480 q 60 -40 120 0 t 120 0 t 120 0"
-            stroke="#1e1b2e"
-            strokeWidth="5"
-            fill="none"
-            opacity="0.35"
+            d="M420 720 L 820 300 L 1240 720 Z"
+            fill={from}
+            opacity="0.45"
           />
-          <circle cx="150" cy="140" r="10" fill={from} stroke="#1e1b2e" strokeWidth="4" />
-          <circle cx="260" cy="90" r="6" fill={to} stroke="#1e1b2e" strokeWidth="4" />
-          <path d="M1080 300 l 8 18 18 8 -18 8 -8 18 -8 -18 -18 -8 18 -8 Z" fill={from} stroke="#1e1b2e" strokeWidth="4" />
+          <path
+            d="M980 720 L 1300 430 L 1560 720 Z"
+            fill="#0b0d13"
+            opacity="0.9"
+          />
+
+          {/* garis horizon tipis */}
+          <path
+            d="M0 560 h 1440"
+            stroke="rgba(255,255,255,0.06)"
+            strokeWidth="1"
+          />
         </svg>
       )}
-      {/* lebur ke kertas di bawah agar judul terbaca */}
-      <div className="absolute inset-0 bg-gradient-to-t from-paper via-paper/70 to-transparent" />
+
+      <div className="scrim-l absolute inset-0" />
+      <div className="scrim-b absolute inset-0" />
     </div>
   );
 }

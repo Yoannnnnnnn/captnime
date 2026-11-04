@@ -16,17 +16,17 @@ export function ContinueWatching() {
     <section>
       <div className="mb-3 flex items-center justify-between gap-4">
         <div>
-          <h2 className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-ink sm:text-xl">
-            <History className="size-4 text-coral-dark" />
+          <h2 className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-text sm:text-xl">
+            <History className="size-4 text-gold" />
             Lanjut Tonton
           </h2>
-          <p className="mt-0.5 text-xs text-mist-400 sm:text-[13px]">
+          <p className="mt-0.5 text-xs text-text-2 sm:text-[13px]">
             Tersimpan otomatis di perangkat ini
           </p>
         </div>
         <Link
           href="/my-list"
-          className="text-xs font-semibold text-mist-300 transition-colors hover:text-coral-dark"
+          className="text-xs font-semibold text-text-2 transition-colors hover:text-gold"
         >
           Riwayat
         </Link>
@@ -54,29 +54,29 @@ export function ContinueWatching() {
                     className="aspect-video"
                   />
                   <span className="absolute inset-0 grid place-items-center">
-                    <span className="grid size-10 place-items-center rounded-full border-2 border-ink bg-coral shadow-[2px_2px_0_0_var(--color-ink)] transition group-hover:scale-110">
+                    <span className="grid size-10 place-items-center rounded-full border border-line bg-gold transition group-hover:scale-110">
                       <Play className="size-4 translate-x-[1px] fill-white text-white" />
                     </span>
                   </span>
 
                   {/* strip progres, gaya label komik */}
-                  <span className="absolute inset-x-1.5 bottom-1.5 block rounded-lg border-2 border-ink bg-paper px-1.5 py-1">
-                    <span className="mb-1 flex items-center justify-between text-[9.5px] font-black text-ink">
+                  <span className="absolute inset-x-1.5 bottom-1.5 block rounded-lg border border-line bg-bg px-1.5 py-1">
+                    <span className="mb-1 flex items-center justify-between text-[9.5px] font-semibold text-text">
                       <span>Ep {item.episode}</span>
                       <span>{formatDuration(item.duration - item.position)}</span>
                     </span>
-                    <span className="block h-1.5 overflow-hidden rounded-full border border-ink bg-card">
+                    <span className="block h-1.5 overflow-hidden rounded-full border border-line bg-surface">
                       <span
-                        className="block h-full rounded-full bg-coral"
+                        className="block h-full rounded-full bg-gold"
                         style={{ width: `${percent}%` }}
                       />
                     </span>
                   </span>
                 </div>
-                <p className="mt-2 truncate text-[13px] font-black text-ink group-hover:text-coral-dark">
+                <p className="mt-2 truncate text-[13px] font-semibold text-text group-hover:text-gold">
                   {item.title}
                 </p>
-                <p className="text-[11px] font-semibold text-ink-mute">
+                <p className="text-[11px] font-semibold text-text-3">
                   Ep {padEpisode(item.episode)} dari {item.totalEpisodes} • {percent}%
                 </p>
               </Link>
@@ -85,7 +85,7 @@ export function ContinueWatching() {
                 type="button"
                 onClick={() => removeHistory(item.slug)}
                 aria-label={`Hapus ${item.title} dari riwayat`}
-                className="absolute -right-1.5 -top-1.5 z-10 grid size-6 place-items-center rounded-full border-2 border-ink bg-card text-ink opacity-0 shadow-[2px_2px_0_0_var(--color-ink)] transition hover:bg-mustard group-hover:opacity-100"
+                className="absolute -right-1.5 -top-1.5 z-10 grid size-6 place-items-center rounded-full border border-line bg-surface text-bg opacity-0 transition hover:bg-gold group-hover:opacity-100"
               >
                 <X className="size-3" />
               </button>

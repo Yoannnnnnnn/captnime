@@ -13,12 +13,6 @@ interface AnimeCardProps {
   size?: "sm" | "md" | "lg";
 }
 
-const STATUS_STYLE: Record<Anime["status"], string> = {
-  ongoing: "bg-coral text-ink",
-  completed: "bg-mint text-ink",
-  upcoming: "bg-lilac text-ink",
-};
-
 const STATUS_TEXT: Record<Anime["status"], string> = {
   ongoing: "Ongoing",
   completed: "Tamat",
@@ -35,42 +29,49 @@ export function AnimeCard({
   return (
     <Link
       href={`/anime/${anime.slug}`}
-      className={cn("group block focus:outline-none", className)}
+      className={cn("group block", className)}
       aria-label={`${anime.title} — ${STATUS_LABEL[anime.status]}`}
     >
-      <div className="relative transition-transform duration-150 group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 group-hover:[&>div:first-child]:shadow-[7px_7px_0_0_var(--color-ink)]">
+      <div className="relative overflow-hidden rounded-lg ring-1 ring-line transition-all duration-300 group-hover:ring-line-2">
         <Poster
           anime={anime}
           titleSize={size === "lg" ? "lg" : "md"}
-          className="aspect-[2/3]"
+          className="aspect-[2/3] transition-transform duration-500 group-hover:scale-[1.04]"
         />
 
+        {/* skor */}
         {anime.score > 0 && (
-          <span className="absolute -left-1 -top-1 flex items-center gap-1 rounded-full border-2 border-ink bg-mustard px-1.5 py-[1px] text-[10px] font-black text-ink shadow-[2px_2px_0_0_var(--color-ink)]">
-            <Star className="size-2.5 fill-ink" />
+          <span className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded bg-bg/75 px-1.5 py-0.5 text-[10px] font-semibold text-gold backdrop-blur-sm">
+            <Star className="size-2.5 fill-current" />
             {anime.score.toFixed(1)}
           </span>
         )}
 
-        <span
-          className={cn(
-            "absolute -right-1 -top-1 rounded-full border-2 border-ink px-1.5 py-[1px] text-[9px] font-black uppercase tracking-wide shadow-[2px_2px_0_0_var(--color-ink)]",
-            STATUS_STYLE[anime.status],
-          )}
-        >
-          {STATUS_TEXT[anime.status]}
-        </span>
+        {/* status tayang */}
+        {anime.status === "ongoing" && (
+          <span className="absolute right-1.5 top-1.5 flex items-center gap-1 rounded bg-bg/75 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-text backdrop-blur-sm">
+            <span className="size-1.5 rounded-full bg-mint" />
+            {STATUS_TEXT.ongoing}
+          </span>
+        )}
+        {anime.status === "upcoming" && (
+          <span className="absolute right-1.5 top-1.5 rounded bg-bg/75 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-text-2 backdrop-blur-sm">
+            Segera
+          </span>
+        )}
 
-        <span className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
-          <span className="grid size-11 place-items-center rounded-full border-2 border-ink bg-coral shadow-[3px_3px_0_0_var(--color-ink)]">
-            <Play className="size-4 translate-x-[1px] fill-ink text-ink" />
+        {/* hover: putar */}
+        <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-bg/85 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <span className="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          <span className="grid size-11 place-items-center rounded-full bg-gold text-bg shadow-lg">
+            <Play className="size-4 translate-x-[1px] fill-current" />
           </span>
         </span>
 
         {typeof progress === "number" && progress > 0 && (
-          <span className="absolute inset-x-2 bottom-2 h-2 overflow-hidden rounded-full border-2 border-ink bg-card">
+          <span className="absolute inset-x-2 bottom-2 h-1 overflow-hidden rounded-full bg-text-3/40">
             <span
-              className="block h-full rounded-full bg-coral"
+              className="block h-full rounded-full bg-gold"
               style={{ width: `${watchPercent(progress, 100)}%` }}
             />
           </span>
@@ -78,10 +79,10 @@ export function AnimeCard({
       </div>
 
       <div className="mt-2">
-        <p className="truncate text-[13px] font-black leading-snug text-ink group-hover:text-coral-dark">
+        <p className="truncate text-[13px] font-medium leading-snug text-text transition-colors group-hover:text-gold">
           {anime.title}
         </p>
-        <p className="truncate text-[11px] font-semibold text-ink-mute">
+        <p className="truncate text-[11px] text-text-3">
           {caption ??
             (anime.status === "upcoming"
               ? `${anime.season ?? anime.year} • Segera`

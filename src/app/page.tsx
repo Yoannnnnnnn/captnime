@@ -39,13 +39,13 @@ export default async function HomePage() {
               <Link
                 key={g.slug}
                 href={`/browse?genre=${encodeURIComponent(g.name)}`}
-                className="sticker-hover flex shrink-0 items-center gap-1.5 rounded-full border-2 border-ink bg-paper-2 px-3.5 py-2 text-[12px] font-semibold text-mist-200 hover:text-ink"
+                className="sticker-hover flex shrink-0 items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 py-2 text-[12px] font-semibold text-text hover:text-text"
               >
                 <span aria-hidden className="text-[13px]">
                   {GENRE_ICONS[g.name] ?? "✧"}
                 </span>
                 {g.name}
-                <span className="text-[10px] text-mist-500">{g.total}</span>
+                <span className="text-[10px] text-text-3">{g.total}</span>
               </Link>
             ))}
           </div>
@@ -65,7 +65,7 @@ export default async function HomePage() {
             >
               <span
                 aria-hidden
-                className="absolute -left-1 -top-3 z-10 select-none text-5xl font-black leading-none text-transparent [-webkit-text-stroke:2px_rgba(255,255,255,0.35)]"
+                className="absolute -left-1 -top-3 z-10 select-none text-5xl font-semibold leading-none text-transparent [-webkit-text-stroke:2px_rgba(255,255,255,0.35)]"
               >
                 {i + 1}
               </span>
@@ -76,20 +76,20 @@ export default async function HomePage() {
 
         {/* Highlight banner */}
         {baru[0] && (
-          <section className="relative overflow-hidden rounded-2xl border-2 border-ink">
-            <div className="grid gap-4 p-4 sm:grid-cols-[200px_1fr] sm:gap-6 sm:p-6">
-              <Poster anime={baru[0]} className="aspect-[2/3] w-full max-w-[200px]" />
+          <section className="relative overflow-hidden rounded-xl border border-line bg-surface">
+            <div className="grid gap-4 p-4 sm:grid-cols-[190px_1fr] sm:gap-6 sm:p-5">
+              <Poster anime={baru[0]} className="aspect-[2/3] w-full max-w-[190px]" />
               <div className="flex flex-col justify-center">
-                <span className="mb-2 flex w-fit items-center gap-1.5 rounded-full bg-cyan-glow/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-cyan-glow">
+                <span className="mb-2 flex w-fit items-center gap-1.5 rounded bg-mint/12 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-mint">
                   <Sparkles className="size-3" /> Rilis Terbaru
                 </span>
-                <h2 className="text-balance text-xl font-black tracking-tight text-ink sm:text-2xl">
+                <h2 className="text-balance text-xl font-semibold tracking-tight text-text sm:text-2xl">
                   {baru[0].title}
                 </h2>
-                <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-mist-300">
+                <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-text-2">
                   {truncate(baru[0].synopsis, 210)}
                 </p>
-                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold text-mist-400">
+                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold text-text-2">
                   <span className="flex items-center gap-1 text-gold">
                     <Star className="size-3 fill-current" /> {baru[0].score.toFixed(1)}
                   </span>
@@ -100,13 +100,13 @@ export default async function HomePage() {
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link
                     href={`/watch/${baru[0].slug}/${baru[0].episodes.at(-1)?.number ?? 1}`}
-                    className="flex h-10 items-center gap-2 rounded-full bg-coral px-5 text-[13px] font-bold text-ink transition hover:bg-coral-dark"
+                    className="btn-sticker h-10 bg-gold px-5 text-[13px] font-semibold text-bg hover:bg-gold-2"
                   >
                     Tonton Episode Terbaru
                   </Link>
                   <Link
                     href={`/anime/${baru[0].slug}`}
-                    className="flex h-10 items-center gap-1.5 rounded-full border-2 border-ink px-4 text-[13px] font-bold text-mist-200 transition hover:bg-paper-2"
+                    className="btn-sticker h-10 border border-line-2 px-4 text-[13px] font-semibold text-text hover:bg-surface-2"
                   >
                     Detail <ArrowRight className="size-3.5" />
                   </Link>
@@ -186,13 +186,13 @@ export default async function HomePage() {
           ].map(({ icon: Icon, title, body }) => (
             <div
               key={title}
-              className="rounded-xl border-2 border-ink bg-card p-4 shadow-[3px_3px_0_0_var(--color-ink)] transition hover:border-ink/30"
+              className="rounded-xl border border-line bg-surface p-4 transition hover:border-line"
             >
-              <span className="mb-2 grid size-9 place-items-center rounded-lg bg-coral/15 text-coral-dark">
+              <span className="mb-2 grid size-9 place-items-center rounded-lg bg-gold/12 text-gold">
                 <Icon className="size-4" />
               </span>
-              <h3 className="text-sm font-bold text-ink">{title}</h3>
-              <p className="mt-1 text-[12px] leading-relaxed text-mist-400">{body}</p>
+              <h3 className="text-sm font-bold text-text">{title}</h3>
+              <p className="mt-1 text-[12px] leading-relaxed text-text-2">{body}</p>
             </div>
           ))}
         </section>

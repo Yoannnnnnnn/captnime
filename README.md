@@ -60,18 +60,23 @@ Pintasan pemutar: `spasi`/`K` putar-jeda · `←`/`→` ±10 detik · `↑`/`↓
 
 ## 3. Bahasa visual
 
-Tema **kartun kertas**: latar krem dengan titik halftone, garis tinta tebal 2px,
-bayangan keras tanpa blur, dan warna flat (coral, mustard, sky, mint, lilac).
+Tema **gelap sinematik**, mengikuti pola produk streaming nyata (Crunchyroll,
+Netflix, Bstation) — bukan gaya dekoratif:
 
-- Poster dibuat *prosedural* — ilustrasi SVG flat (matahari, bukit, ombak,
-  gedung, portal) dengan garis tepi tebal, bukan gradient/blob abstrak.
-- Tidak ada glassmorphism, glow, atau gradient-blur.
-- Sudut membulat, label gaya stiker, dan tipografi tebal.
-- Palet & bentuk didefinisikan sebagai token di `src/app/globals.css`
-  (`--color-paper`, `--color-ink`, `--color-coral`, dst.) serta utility
-  `sticker`, `btn-sticker`, `tag-sticker`.
+- Latar berlapis `#08090d → #12141a → #191c24`, garis 1px (`--color-line`),
+  tanpa glow/gradient-blur.
+- **Satu aksen** emas `#ffb020` hanya untuk aksi utama, item aktif, dan progres.
+- Gambar jadi bintang utama: hero full-bleed dengan scrim bertingkat, kartu
+  poster 2:3 tanpa border tebal, hover sekadar zoom tipis + elevasi warna.
+- Tipografi bobot sedang (400–600) dengan hierarki ukuran, bukan heading raksasa.
+- Poster dibangkitkan prosedural (SVG minimal: lengkung langit, siluet, bulan)
+  agar katalog punya karakter tanpa aset berhak cipta.
 
-## 3. Arsitektur
+Token didefinisikan di `src/app/globals.css` (`--color-bg`, `--color-surface`,
+`--color-line`, `--color-text`, `--color-gold`) dengan utility `scrim-b`,
+`scrim-l`, `sticker`, `btn-sticker`.
+
+## 4. Arsitektur
 
 ```
 src/

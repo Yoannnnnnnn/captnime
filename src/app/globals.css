@@ -2,67 +2,76 @@
 
 @theme {
   /* ============================================================
-     PALET: kartun "kertas" — krem hangat, tinta gelap, warna flat
+     TEMA: gelap sinematik (pola Crunchyroll / Netflix)
+     Netral gelap berlapis, satu aksen emas, border 1px, tanpa glow.
      ============================================================ */
-  --color-paper: #fff7e9;
-  --color-paper-2: #ffeed6;
-  --color-paper-3: #ffe3c2;
-  --color-card: #ffffff;
+  --color-bg: #08090d;
+  --color-surface: #12141a;
+  --color-surface-2: #191c24;
+  --color-surface-3: #22262f;
 
-  --color-ink: #1e1b2e;
-  --color-ink-soft: #4a4560;
-  --color-ink-mute: #7c7691;
+  --color-line: #262a35;
+  --color-line-2: #343a48;
 
-  --color-coral: #ff5d5d;
-  --color-coral-dark: #e84545;
-  --color-mustard: #ffc14d;
-  --color-sky: #5ab9ff;
-  --color-mint: #4fd1a5;
-  --color-lilac: #b9a6ff;
-  --color-pink: #ff9ecb;
+  --color-text: #f3f5f9;
+  --color-text-2: #a6adbd;
+  --color-text-3: #6d7486;
 
-  /* --- token lama dipetakan ulang agar komponen lama ikut tema --- */
-  --color-ink-950: #fff7e9;
-  --color-ink-900: #ffeed6;
-  --color-ink-850: #ffffff;
-  --color-ink-800: #fffdf8;
-  --color-ink-700: #ffe3c2;
-  --color-ink-600: #f0d3b4;
-  --color-ink-500: #cbb79c;
-  --color-mist-100: #1e1b2e;
-  --color-mist-200: #2b2740;
-  --color-mist-300: #4a4560;
-  --color-mist-400: #6f6883;
-  --color-mist-500: #8d86a3;
-  --color-mist-600: #aaa3bd;
+  --color-gold: #ffb020;
+  --color-gold-2: #e6990b;
+  --color-mint: #3ddc97;
+  --color-coral: #ff5c6c;
+  --color-sky: #58a6ff;
 
-  --color-brand-50: #fff0ef;
-  --color-brand-200: #ffc9c9;
-  --color-brand-400: #ff7a7a;
-  --color-brand-500: #ff5d5d;
-  --color-brand-600: #e84545;
-  --color-brand-700: #c73333;
+  /* --- alias token lama agar komponen lain ikut tema ini --- */
+  --color-paper: #08090d;
+  --color-paper-2: #12141a;
+  --color-paper-3: #191c24;
+  --color-card: #12141a;
+
+  --color-ink: #f3f5f9;
+  --color-ink-soft: #a6adbd;
+  --color-ink-mute: #6d7486;
+
+  --color-ink-950: #08090d;
+  --color-ink-900: #12141a;
+  --color-ink-850: #12141a;
+  --color-ink-800: #191c24;
+  --color-ink-700: #22262f;
+  --color-ink-600: #262a35;
+  --color-ink-500: #343a48;
+
+  --color-mist-100: #f3f5f9;
+  --color-mist-200: #d7dce6;
+  --color-mist-300: #a6adbd;
+  --color-mist-400: #8a92a3;
+  --color-mist-500: #6d7486;
+  --color-mist-600: #565d6e;
+
+  --color-brand-50: #2a2213;
+  --color-brand-200: #ffd88a;
+  --color-brand-400: #ffc352;
+  --color-brand-500: #ffb020;
+  --color-brand-600: #e6990b;
+  --color-brand-700: #c98600;
 
   --color-violet-glow: #b9a6ff;
-  --color-cyan-glow: #4fd1a5;
-  --color-gold: #f0a51e;
+  --color-cyan-glow: #3ddc97;
+  --color-gold-ink: #08090d;
 
-  --font-sans: ui-rounded, "Nunito", "Quicksand", ui-sans-serif, system-ui,
-    -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 
-  --radius-xl2: 1.25rem;
-
-  --animate-fade-up: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-fade-in: fade-in 0.3s ease-out both;
-  --animate-slide-down: slide-down 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-wiggle: wiggle 0.5s ease-in-out;
-  --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-slide-down: slide-down 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-slow-zoom: slow-zoom 18s ease-out both;
 }
 
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -90,24 +99,12 @@
   }
 }
 
-@keyframes wiggle {
-  0%,
-  100% {
-    transform: rotate(-2deg);
-  }
-  50% {
-    transform: rotate(2deg);
-  }
-}
-
-@keyframes pop {
-  0% {
-    transform: scale(0.92);
-    opacity: 0;
-  }
-  100% {
+@keyframes slow-zoom {
+  from {
     transform: scale(1);
-    opacity: 1;
+  }
+  to {
+    transform: scale(1.08);
   }
 }
 
@@ -118,62 +115,41 @@
   }
 
   html {
-    color-scheme: light;
+    color-scheme: dark;
+    scroll-behavior: smooth;
   }
 
   body {
-    background-color: var(--color-paper);
-    color: var(--color-ink);
+    background-color: var(--color-bg);
+    color: var(--color-text);
     font-family: var(--font-sans);
-    font-weight: 600;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
     overflow-x: hidden;
-    /* titik-titik halftone, tekstur kertas komik */
-    background-image: radial-gradient(
-      var(--color-ink) 0.5px,
-      transparent 0.5px
-    );
-    background-size: 22px 22px;
-    background-attachment: fixed;
-    background-position: -10px -10px;
-  }
-
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background: var(--color-paper);
-    opacity: 0.86;
-    z-index: -1;
   }
 
   ::selection {
-    background: var(--color-mustard);
-    color: var(--color-ink);
+    background: var(--color-gold);
+    color: var(--color-bg);
   }
 
   h1,
   h2,
   h3 {
-    letter-spacing: -0.02em;
-    font-weight: 900;
+    letter-spacing: -0.015em;
   }
 
   .scroll-thin {
     scrollbar-width: thin;
-    scrollbar-color: var(--color-ink-600) transparent;
+    scrollbar-color: var(--color-line-2) transparent;
   }
   .scroll-thin::-webkit-scrollbar {
-    height: 8px;
-    width: 8px;
+    height: 6px;
+    width: 6px;
   }
   .scroll-thin::-webkit-scrollbar-thumb {
-    background: var(--color-ink-600);
+    background: var(--color-line-2);
     border-radius: 9999px;
-  }
-  .scroll-thin::-webkit-scrollbar-track {
-    background: transparent;
   }
 
   .no-scrollbar {
@@ -185,7 +161,7 @@
   }
 
   :focus-visible {
-    outline: 3px solid var(--color-coral);
+    outline: 2px solid var(--color-gold);
     outline-offset: 2px;
   }
 }
@@ -204,32 +180,29 @@
   }
 }
 
-/* Kartu bergaris tebal + bayangan keras (khas kartun) */
+/* Kartu permukaan: border 1px, radius kecil, elevasi via warna */
 @utility sticker {
-  border: 2px solid var(--color-ink);
-  border-radius: 1rem;
-  box-shadow: 4px 4px 0 0 var(--color-ink);
-  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  border-radius: 0.75rem;
+  background: var(--color-surface);
 }
 
 @utility sticker-sm {
-  border: 2px solid var(--color-ink);
-  border-radius: 0.75rem;
-  box-shadow: 2px 2px 0 0 var(--color-ink);
-  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  border-radius: 0.5rem;
+  background: var(--color-surface);
 }
 
+/* Interaksi kartu: naik tipis + border lebih terang (pola Netflix hover) */
 @utility sticker-hover {
   transition:
-    transform 0.16s ease,
-    box-shadow 0.16s ease;
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.25s ease,
+    background-color 0.25s ease;
   &:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0 0 var(--color-ink);
-  }
-  &:active {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0 0 var(--color-ink);
+    transform: translateY(-2px);
+    border-color: var(--color-line-2);
+    background: var(--color-surface-2);
   }
 }
 
@@ -239,47 +212,61 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border: 2px solid var(--color-ink);
-  border-radius: 9999px;
-  font-weight: 800;
-  box-shadow: 4px 4px 0 0 var(--color-ink);
+  border-radius: 0.6rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
   transition:
-    transform 0.14s ease,
-    box-shadow 0.14s ease;
-  &:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: 5px 5px 0 0 var(--color-ink);
-  }
+    background-color 0.2s ease,
+    transform 0.15s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease;
   &:active {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0 0 var(--color-ink);
+    transform: scale(0.985);
   }
 }
 
+/* Label kecil */
 @utility tag-sticker {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  border: 2px solid var(--color-ink);
-  border-radius: 9999px;
-  padding: 0.15rem 0.6rem;
+  gap: 0.3rem;
+  border-radius: 0.375rem;
+  padding: 0.15rem 0.45rem;
   font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  box-shadow: 2px 2px 0 0 var(--color-ink);
-  background: var(--color-card);
-  color: var(--color-ink);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid var(--color-line);
+  background: color-mix(in oklab, var(--color-surface-2) 80%, transparent);
+  color: var(--color-text-2);
 }
 
 @utility tilt-l {
-  transform: rotate(-1.5deg);
+  transform: none;
 }
 @utility tilt-r {
-  transform: rotate(1.5deg);
+  transform: none;
 }
-
 @utility text-glow {
   text-shadow: none;
+}
+
+/* Scrim untuk teks di atas gambar (arah bawah, seperti app streaming) */
+@utility scrim-b {
+  background: linear-gradient(
+    to top,
+    var(--color-bg) 0%,
+    color-mix(in oklab, var(--color-bg) 78%, transparent) 35%,
+    transparent 100%
+  );
+}
+
+@utility scrim-l {
+  background: linear-gradient(
+    to right,
+    color-mix(in oklab, var(--color-bg) 94%, transparent) 0%,
+    color-mix(in oklab, var(--color-bg) 62%, transparent) 45%,
+    transparent 100%
+  );
 }
 
 @media (prefers-reduced-motion: reduce) {

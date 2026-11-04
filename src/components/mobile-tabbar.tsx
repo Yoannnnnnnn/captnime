@@ -20,7 +20,7 @@ export function MobileTabBar() {
   return (
     <nav
       aria-label="Navigasi bawah"
-      className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-ink bg-paper pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
     >
       <ul className="grid grid-cols-4">
         {TABS.map((tab) => {
@@ -32,21 +32,15 @@ export function MobileTabBar() {
               <Link
                 href={tab.href}
                 className={cn(
-                  "flex flex-col items-center gap-1 py-2.5 text-[10px] font-extrabold transition-colors",
-                  active ? "text-coral-dark" : "text-ink-mute",
+                  "relative flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors",
+                  active ? "text-gold" : "text-text-3",
                 )}
               >
-                <span
-                  className={cn(
-                    "grid size-7 place-items-center rounded-lg border-2 transition",
-                    active
-                      ? "border-ink bg-mustard text-ink shadow-[2px_2px_0_0_var(--color-ink)]"
-                      : "border-transparent",
-                  )}
-                >
-                  <Icon className="size-4" />
-                </span>
+                <Icon className="size-[18px]" />
                 {tab.label}
+                {active && (
+                  <span className="absolute inset-x-0 top-0 mx-auto h-0.5 w-8 rounded-full bg-gold" />
+                )}
               </Link>
             </li>
           );
