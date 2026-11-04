@@ -14,6 +14,10 @@ const NAV = [
   { href: "/my-list", label: "Daftar Saya", icon: Bookmark },
 ];
 
+/**
+ * Header hanya untuk layar kecil. Di desktop, navigasi ditangani SideNav
+ * sehingga tidak ada dua sistem navigasi yang bersaing.
+ */
 export function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
@@ -54,74 +58,30 @@ export function SiteHeader() {
     <>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 transition-all duration-300",
+          "fixed inset-x-0 top-0 z-50 transition-colors duration-300 lg:hidden",
           scrolled
-            ? "border-b border-line bg-bg/92 backdrop-blur-md"
-            : "border-b border-transparent bg-gradient-to-b from-bg/85 to-transparent",
+            ? "border-b border-line bg-bg/95 backdrop-blur-md"
+            : "bg-gradient-to-b from-bg/90 to-transparent",
         )}
       >
-        <div className="container-page flex h-16 items-center gap-4">
+        <div className="flex h-14 items-center gap-3 px-4">
           <Logo />
 
-          <nav className="hidden items-center gap-0.5 md:flex" aria-label="Navigasi utama">
-            {NAV.map((item) => {
-              const active =
-                item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "relative rounded px-3 py-2 text-[13px] font-medium transition-colors",
-                    active ? "text-text" : "text-text-2 hover:text-text",
-                  )}
-                >
-                  {item.label}
-                  {active && (
-                    <span className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-gold" />
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-
-          <div className="ml-auto flex items-center gap-2">
-            <form onSubmit={submit} className="hidden sm:block">
-              <label className="flex h-9 w-52 items-center gap-2 rounded-md border border-line bg-surface/80 pl-2.5 transition-colors focus-within:border-line-2 focus-within:bg-surface">
-                <Search className="size-4 shrink-0 text-text-3" />
-                <input
-                  value={term}
-                  onChange={(e) => setTerm(e.target.value)}
-                  placeholder="Cari anime"
-                  aria-label="Cari anime"
-                  className="h-full w-full bg-transparent pr-2.5 text-[13px] text-text placeholder:text-text-3 focus:outline-none"
-                />
-              </label>
-            </form>
-
+          <div className="ml-auto flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => setSearchOpen((v) => !v)}
               aria-label="Cari"
               aria-expanded={searchOpen}
-              className="grid size-9 place-items-center rounded-md border border-line text-text-2 sm:hidden"
+              className="grid size-9 place-items-center rounded-md border border-line text-text-2"
             >
               {searchOpen ? <X className="size-4" /> : <Search className="size-4" />}
             </button>
-
-            <Link
-              href="/my-list"
-              className="hidden h-9 items-center gap-1.5 rounded-md bg-gold px-3.5 text-[13px] font-semibold text-bg transition-colors hover:bg-gold-2 md:flex"
-            >
-              <Bookmark className="size-3.5" />
-              Daftar Saya
-            </Link>
-
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
               aria-label="Buka menu"
-              className="grid size-9 place-items-center rounded-md border border-line text-text-2 md:hidden"
+              className="grid size-9 place-items-center rounded-md border border-line text-text-2"
             >
               <Menu className="size-4" />
             </button>
@@ -129,7 +89,7 @@ export function SiteHeader() {
         </div>
 
         {searchOpen && (
-          <div className="animate-slide-down border-t border-line bg-bg px-4 pb-3 pt-2 sm:hidden">
+          <div className="animate-slide-down border-t border-line bg-bg px-4 pb-3 pt-2">
             <form onSubmit={submit} className="flex items-center gap-2">
               <label className="flex h-10 flex-1 items-center gap-2 rounded-md border border-line bg-surface px-3">
                 <Search className="size-4 text-text-3" />
@@ -154,7 +114,7 @@ export function SiteHeader() {
       </header>
 
       {menuOpen && (
-        <div className="fixed inset-0 z-[60] md:hidden">
+        <div className="fixed inset-0 z-[60] lg:hidden">
           <button
             type="button"
             aria-label="Tutup menu"
@@ -183,7 +143,7 @@ export function SiteHeader() {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors",
                       active ? "bg-surface-2 text-text" : "text-text-2 hover:bg-surface-2",
                     )}
                   >
@@ -193,10 +153,6 @@ export function SiteHeader() {
                 );
               })}
             </nav>
-            <p className="mt-4 border-t border-line pt-3 text-[11px] leading-relaxed text-text-3">
-              Captnime menyajikan katalog orisinal. Lapisan provider bisa diarahkan
-              ke sumber resmi berlisensi milik Anda.
-            </p>
           </div>
         </div>
       )}

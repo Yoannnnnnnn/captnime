@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="container-page pt-20 sm:pt-24" aria-busy="true" aria-live="polite">
+    <div className="container-page pt-16 lg:pt-7" aria-busy="true" aria-live="polite">
       <div className="h-8 w-48 animate-pulse rounded-lg bg-surface" />
       <div className="mt-2 h-4 w-32 animate-pulse rounded bg-surface" />
       <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">

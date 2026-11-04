@@ -3,6 +3,8 @@ import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { MobileTabBar } from "@/components/mobile-tabbar";
+import { SideNav } from "@/components/side-nav";
+import { ALL_GENRES } from "@/lib/data/catalog";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://captnime.app"),
@@ -37,8 +39,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fff7e9",
-  colorScheme: "light",
+  themeColor: "#08090d",
+  colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -48,22 +50,25 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="id" className="scroll-smooth">
+    <html lang="id">
       <body className="min-h-dvh bg-bg text-text antialiased">
         <a
           href="#konten"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-lg focus:bg-gold focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-bg"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-md focus:bg-gold focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-bg"
         >
           Lompat ke konten
         </a>
 
+        <SideNav genres={ALL_GENRES} />
         <SiteHeader />
 
-        <main id="konten" className="relative pb-16 md:pb-0">
-          {children}
-        </main>
+        <div className="lg:pl-[228px]">
+          <main id="konten" className="relative pb-16 md:pb-0">
+            {children}
+          </main>
+          <SiteFooter />
+        </div>
 
-        <SiteFooter />
         <MobileTabBar />
       </body>
     </html>

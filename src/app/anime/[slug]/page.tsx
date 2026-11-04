@@ -89,7 +89,7 @@ export default async function AnimeDetailPage({ params }: PageProps) {
           <Backdrop anime={anime} />
         </div>
 
-        <div className="container-page pt-20 sm:pt-24">
+        <div className="container-page pt-16 lg:pt-7">
           <nav className="mb-4 flex items-center gap-1.5 text-[11px] font-semibold text-text-2">
             <Link href="/" className="hover:text-gold">Beranda</Link>
             <span>/</span>

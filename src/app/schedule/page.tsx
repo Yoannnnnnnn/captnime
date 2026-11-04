@@ -25,7 +25,7 @@ export default async function SchedulePage() {
   const totalOngoing = Object.values(schedule).reduce((acc, list) => acc + list.length, 0);
 
   return (
-    <div className="container-page pt-20 sm:pt-24">
+    <div className="container-page pt-16 lg:pt-7">
       <header className="mb-6">
         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gold">
           Jadwal

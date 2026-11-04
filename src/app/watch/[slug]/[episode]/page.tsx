@@ -41,7 +41,7 @@ export default async function WatchPage({ params }: PageProps) {
   const next = index < anime.episodes.length - 1 ? anime.episodes[index + 1] : undefined;
 
   return (
-    <div className="container-page pt-16 sm:pt-20">
+    <div className="container-page pt-14 lg:pt-5">
       <nav className="flex flex-wrap items-center gap-1.5 py-3 text-[11px] font-semibold text-text-2">
         <Link href="/" className="hover:text-gold">Beranda</Link>
         <span>/</span>

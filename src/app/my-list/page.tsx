@@ -26,7 +26,7 @@ export default function MyListPage() {
   const historyItems = history;
 
   return (
-    <div className="container-page pt-20 sm:pt-24">
+    <div className="container-page pt-16 lg:pt-7">
       <header className="mb-5">
         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gold">
           Perpustakaan

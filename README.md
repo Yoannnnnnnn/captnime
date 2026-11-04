@@ -76,6 +76,21 @@ Token didefinisikan di `src/app/globals.css` (`--color-bg`, `--color-surface`,
 `--color-line`, `--color-text`, `--color-gold`) dengan utility `scrim-b`,
 `scrim-l`, `sticker`, `btn-sticker`.
 
+### Tata letak
+
+Struktur sengaja dibuat tidak mengikuti pola "hero + rail horizontal + grid
+seragam" yang dipakai hampir semua aplikasi streaming:
+
+- **Navigasi samping** (`SideNav`) di desktop — menu, genre, dan pencarian dalam
+  satu kolom tetap; header atas hanya dipakai di layar kecil.
+- **Beranda bento asimetris** — panel feature 8 kolom berdampingan dengan kolom
+  "Lanjut tonton" dan "Rilis hari ini", lalu daftar berangka, mosaik ukuran
+  campur, dan daftar episode bergaya arsip. Tidak ada carousel.
+- **Jelajah** — panel filter menempel di kiri, hasil sebagai mosaik dengan satu
+  tile besar, bukan grid kartu seragam.
+- Tipografi editorial: kicker bernomor (`01`, `02`), garis pemisah 1px, dan
+  judul berukuran sedang agar hierarki datang dari susunan, bukan ketebalan.
+
 ## 4. Arsitektur
 
 ```

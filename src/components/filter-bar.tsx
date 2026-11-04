@@ -2,14 +2,14 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Search, SlidersHorizontal, X, Loader2 } from "lucide-react";
-import { GENRE_ICONS, TYPE_LIST } from "@/lib/data/catalog";
+import { Loader2, Search, X } from "lucide-react";
+import { TYPE_LIST } from "@/lib/data/catalog";
 import type { GenreInfo } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const STATUS_OPTIONS = [
-  { value: "semua", label: "Semua Status" },
-  { value: "ongoing", label: "Sedang Tayang" },
+  { value: "semua", label: "Semua status" },
+  { value: "ongoing", label: "Sedang tayang" },
   { value: "completed", label: "Tamat" },
   { value: "upcoming", label: "Segera" },
 ];
@@ -17,7 +17,7 @@ const STATUS_OPTIONS = [
 const SORT_OPTIONS = [
   { value: "populer", label: "Terpopuler" },
   { value: "terbaru", label: "Terbaru" },
-  { value: "rating", label: "Rating Tertinggi" },
+  { value: "rating", label: "Rating tertinggi" },
   { value: "judul", label: "A–Z" },
 ];
 
@@ -28,7 +28,6 @@ export function FilterBar({ genres }: { genres: GenreInfo[] }) {
   const [isPending, startTransition] = useTransition();
 
   const [term, setTerm] = useState(params.get("q") ?? "");
-  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     setTerm(params.get("q") ?? "");
@@ -58,146 +57,156 @@ export function FilterBar({ genres }: { genres: GenreInfo[] }) {
     push({ q: term.trim() || undefined });
   };
 
-  const activeCount = [
-    current.genre !== "semua",
-    current.status !== "semua",
-    current.type !== "semua",
-  ].filter(Boolean).length;
+  const hasFilter =
+    current.genre !== "semua" ||
+    current.status !== "semua" ||
+    current.type !== "semua" ||
+    current.sort !== "populer" ||
+    Boolean(params.get("q"));
 
   return (
-    <div className="space-y-3">
-      <div className="flex gap-2">
-        <form onSubmit={submitSearch} className="flex-1">
-          <label className="flex h-11 items-center gap-2 rounded-xl border border-line bg-ink-850 px-3 transition focus-within:border-line">
-            <Search className="size-4 shrink-0 text-text-2" />
-            <input
-              value={term}
-              onChange={(e) => setTerm(e.target.value)}
-              placeholder="Cari judul, genre, atau studio…"
-              aria-label="Cari anime"
-              className="h-full w-full bg-transparent text-sm text-text placeholder:text-text-2/80 focus:outline-none"
-            />
-            {term && (
-              <button
-                type="button"
-                onClick={() => {
-                  setTerm("");
-                  push({ q: undefined });
-                }}
-                aria-label="Hapus pencarian"
-                className="grid size-6 place-items-center rounded-full bg-surface-2 text-text-2"
-              >
-                <X className="size-3" />
-              </button>
-            )}
-          </label>
-        </form>
-
-        <button
-          type="button"
-          onClick={() => setShowFilters((v) => !v)}
-          aria-expanded={showFilters}
-          className={cn(
-            "relative flex h-11 items-center gap-2 rounded-xl border px-3.5 text-sm font-bold transition",
-            showFilters || activeCount > 0
-              ? "border-line bg-gold/12 text-gold"
-              : "border-line bg-ink-850 text-text hover:bg-ink-800",
+    <div className="space-y-4">
+      <form onSubmit={submitSearch}>
+        <label className="flex h-9 items-center gap-2 rounded-md border border-line bg-surface px-2.5">
+          <Search className="size-3.5 shrink-0 text-text-3" />
+          <input
+            value={term}
+            onChange={(e) => setTerm(e.target.value)}
+            placeholder="Cari judul"
+            aria-label="Cari anime"
+            className="h-full w-full bg-transparent text-[12.5px] text-text placeholder:text-text-3 focus:outline-none"
+          />
+          {term && (
+            <button
+              type="button"
+              onClick={() => {
+                setTerm("");
+                push({ q: undefined });
+              }}
+              aria-label="Hapus pencarian"
+              className="grid size-5 place-items-center rounded-full text-text-3 hover:text-text"
+            >
+              <X className="size-3" />
+            </button>
           )}
-        >
-          {isPending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <SlidersHorizontal className="size-4" />
-          )}
-          Filter
-          {activeCount > 0 && (
-            <span className="grid size-4 place-items-center rounded-full bg-gold text-[9px] font-semibold text-bg">
-              {activeCount}
-            </span>
-          )}
-        </button>
-      </div>
+        </label>
+      </form>
 
-      {showFilters && (
-        <div className="animate-slide-down space-y-4 rounded-xl border border-line bg-ink-850/80 p-4">
-          <Field label="Status">
-            <div className="flex flex-wrap gap-1.5">
-              {STATUS_OPTIONS.map((opt) => (
-                <Chip
-                  key={opt.value}
-                  active={current.status === opt.value}
-                  onClick={() => push({ status: opt.value })}
-                >
-                  {opt.label}
-                </Chip>
-              ))}
-            </div>
-          </Field>
-
-          <Field label="Tipe">
-            <div className="flex flex-wrap gap-1.5">
-              <Chip
-                active={current.type === "semua"}
-                onClick={() => push({ type: "semua" })}
-              >
-                Semua
-              </Chip>
-              {TYPE_LIST.map((t) => (
-                <Chip key={t} active={current.type === t} onClick={() => push({ type: t })}>
-                  {t}
-                </Chip>
-              ))}
-            </div>
-          </Field>
-
-          <Field label="Genre">
-            <div className="flex flex-wrap gap-1.5">
-              <Chip
-                active={current.genre === "semua"}
-                onClick={() => push({ genre: "semua" })}
-              >
-                Semua Genre
-              </Chip>
-              {genres.map((g) => (
-                <Chip
-                  key={g.slug}
-                  active={current.genre === g.name}
-                  onClick={() => push({ genre: g.name })}
-                >
-                  <span className="mr-1" aria-hidden>
-                    {GENRE_ICONS[g.name] ?? "✧"}
-                  </span>
-                  {g.name}
-                </Chip>
-              ))}
-            </div>
-          </Field>
-        </div>
+      {isPending && (
+        <p className="flex items-center gap-1.5 text-[11px] text-text-3">
+          <Loader2 className="size-3 animate-spin" /> Memuat…
+        </p>
       )}
 
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-        <span className="shrink-0 text-[11px] font-bold uppercase tracking-widest text-text-3">
-          Urutkan
-        </span>
-        {SORT_OPTIONS.map((opt) => (
-          <Chip
-            key={opt.value}
-            active={current.sort === opt.value}
-            onClick={() => push({ sort: opt.value })}
-          >
-            {opt.label}
+      <Group title="Status">
+        <ul className="-mx-2">
+          {STATUS_OPTIONS.map((opt) => (
+            <li key={opt.value}>
+              <button
+                type="button"
+                onClick={() => push({ status: opt.value })}
+                aria-pressed={current.status === opt.value}
+                className={cn(
+                  "flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-[12.5px] transition-colors",
+                  current.status === opt.value
+                    ? "bg-surface text-text"
+                    : "text-text-2 hover:bg-surface/60 hover:text-text",
+                )}
+              >
+                {opt.label}
+                {current.status === opt.value && (
+                  <span className="size-1.5 rounded-full bg-gold" />
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </Group>
+
+      <Group title="Tipe">
+        <div className="flex flex-wrap gap-1.5">
+          <Chip active={current.type === "semua"} onClick={() => push({ type: "semua" })}>
+            Semua
           </Chip>
-        ))}
-      </div>
+          {TYPE_LIST.map((t) => (
+            <Chip key={t} active={current.type === t} onClick={() => push({ type: t })}>
+              {t}
+            </Chip>
+          ))}
+        </div>
+      </Group>
+
+      <Group title="Genre">
+        <ul className="-mx-2 max-h-64 overflow-y-auto pr-1 scroll-thin">
+          <li>
+            <button
+              type="button"
+              onClick={() => push({ genre: "semua" })}
+              className={cn(
+                "flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-[12.5px] transition-colors",
+                current.genre === "semua"
+                  ? "bg-surface text-text"
+                  : "text-text-2 hover:bg-surface/60 hover:text-text",
+              )}
+            >
+              Semua genre
+            </button>
+          </li>
+          {genres.map((g) => (
+            <li key={g.slug}>
+              <button
+                type="button"
+                onClick={() => push({ genre: g.name })}
+                className={cn(
+                  "flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-[12.5px] transition-colors",
+                  current.genre === g.name
+                    ? "bg-surface text-text"
+                    : "text-text-2 hover:bg-surface/60 hover:text-text",
+                )}
+              >
+                {g.name}
+                <span className="text-[10px] tabular-nums text-text-3">{g.total}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </Group>
+
+      <Group title="Urutkan">
+        <div className="flex flex-wrap gap-1.5">
+          {SORT_OPTIONS.map((opt) => (
+            <Chip
+              key={opt.value}
+              active={current.sort === opt.value}
+              onClick={() => push({ sort: opt.value })}
+            >
+              {opt.label}
+            </Chip>
+          ))}
+        </div>
+      </Group>
+
+      {hasFilter && (
+        <button
+          type="button"
+          onClick={() => {
+            setTerm("");
+            startTransition(() => router.push(pathname, { scroll: false }));
+          }}
+          className="text-[11.5px] text-text-3 underline decoration-line-2 underline-offset-2 hover:text-gold"
+        >
+          Reset semua filter
+        </button>
+      )}
     </div>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div>
-      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-2">
-        {label}
+    <div className="border-t border-line pt-3">
+      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-text-3">
+        {title}
       </p>
       {children}
     </div>
@@ -219,10 +228,10 @@ function Chip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition",
+        "rounded border px-2 py-1 text-[11.5px] transition-colors",
         active
-          ? "border-line bg-gold/12 text-gold"
-          : "border-line bg-surface text-text-2 hover:border-line-2 hover:text-text",
+          ? "border-gold/50 bg-gold/10 text-gold"
+          : "border-line text-text-2 hover:border-line-2 hover:text-text",
       )}
     >
       {children}

@@ -3,7 +3,7 @@ import { Compass, House, SearchX } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="container-page flex min-h-[70vh] flex-col items-center justify-center pt-24 text-center">
+    <div className="container-page flex min-h-[70vh] flex-col items-center justify-center pt-16 lg:pt-7 text-center">
       <span className="grid size-16 place-items-center rounded-2xl bg-gold/12 text-gold">
         <SearchX className="size-7" />
       </span>
