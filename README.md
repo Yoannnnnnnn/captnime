@@ -23,12 +23,19 @@ npm run clean                # buang cache .next & .next-build
 Host dan port bisa diatur lewat env (default `0.0.0.0:3000`):
 
 ```bash
-HOST=:: PORT=3000 npm start   # dual-stack IPv4 + IPv6
+HOST=127.0.0.1 PORT=3001 npm start   # hanya loopback
+HOST=::        PORT=3000 npm start   # dual-stack IPv4 + IPv6
 ```
 
-Pakai `HOST=::` bila aplikasi dijalankan di belakang reverse proxy / preview
-sandbox yang menghubungi `localhost` lewat IPv6 (`::1`). Server Next yang hanya
-bind IPv4 membuat proxy gagal konek dan mengembalikan **502 Bad Gateway**.
+`HOST=::` berguna di lingkungan container/preview yang mungkin menghubungi
+`localhost` lewat IPv6 (`::1`); pada kernel dengan `bindv6only=0` satu listener
+melayani kedua keluarga alamat. Untuk sebagian besar deployment,
+nilai default sudah cukup.
+
+> **Catatan operasional:** pada lingkungan preview, buka aplikasi lewat panel
+> preview yang disediakan platform. Membuka URL preview secara manual di tab
+> baru bisa menghasilkan `502 Bad Gateway` meski server berjalan normal —
+> penyebabnya ada di lapisan proxy, bukan di aplikasi.
 
 Tidak perlu konfigurasi apa pun — katalog demo sudah terisi.
 
