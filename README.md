@@ -4,9 +4,10 @@ Platform streaming anime — antarmuka cepat, katalog rapi, subtitle Indonesia, 
 lanjut-tonton otomatis. Dibangun dengan **Next.js 15 (App Router) + TypeScript +
 Tailwind CSS 4**.
 
-> **Status:** MVP fitur inti selesai dan berjalan penuh dengan katalog demo
-> (konten orisinal). Lapisan provider membuat aplikasi siap disambungkan ke
-> sumber data produksi tanpa mengubah satu pun komponen UI.
+> **Status:** MVP fitur inti selesai. Fase 1 (CMS + basis data) sudah ada:
+> katalog dapat dikelola sendiri lewat `/admin` tanpa deploy ulang. Lapisan
+> provider membuat aplikasi siap disambungkan ke sumber data produksi tanpa
+> mengubah satu pun komponen UI.
 
 ---
 
@@ -45,12 +46,13 @@ Tidak perlu konfigurasi apa pun — katalog demo sudah terisi.
 
 | Area | Detail |
 | --- | --- |
-| **Beranda** | Hero carousel otomatis, rail Trending dengan peringkat, Sedang Tayang, Baru Ditambahkan, Rating Tertinggi, chip genre, dan panel “Lanjut Tonton”. |
+| **Beranda** | Masthead bernomor, feature asimetris 8 kolom, panel “Lanjut Tonton” + rilis hari ini, daftar “Paling ditonton” berangka, mosaik ukuran campur, arsip episode, dan rating tertinggi. |
 | **Katalog** | Pencarian teks, filter genre/status/tipe, 4 opsi pengurutan, paginasi, dan empty-state yang informatif. |
 | **Detail anime** | Backdrop dinamis, poster, sinopsis, tabel informasi (studio/musim/durasi/jadwal), daftar episode dengan progres, anime terkait, tombol daftar tonton. |
 | **Pemutar** | HLS (hls.js) & MP4, pilih server, subtitle Indonesia/Inggris on-off, resume dari posisi terakhir, auto-next dengan hitungan, kecepatan 0.75×–2×, PiP, layar penuh, pintasan keyboard, penanganan error + tombol ganti server. |
 | **Jadwal** | Jadwal rilis mingguan, hari ini disorot otomatis. |
 | **Daftar Saya** | Watchlist + riwayat tontonan (progres per episode) tersimpan di perangkat. |
+| **Panel admin** | `/admin`: login berbasis password env, CRUD judul, episode, server streaming, dan subtitle. Perubahan langsung tayang lewat revalidasi — tanpa deploy ulang. Lihat [`docs/DATABASE.md`](docs/DATABASE.md). |
 | **UX** | Mobile-first, bottom tab bar, drawer menu, skeleton loading, halaman 404, `prefers-reduced-motion`, fokus keyboard, aria-label, metadata SEO + sitemap + PWA manifest. |
 
 Pintasan pemutar: `spasi`/`K` putar-jeda · `←`/`→` ±10 detik · `↑`/`↓` volume ·
@@ -102,6 +104,7 @@ src/
 │  ├─ watch/[slug]/[ep]/ # halaman menonton
 │  ├─ schedule/          # jadwal rilis
 │  ├─ my-list/           # watchlist & riwayat
+│  ├─ admin/             # panel CMS (login + panel terproteksi)
 │  ├─ manifest.ts        # PWA
 │  ├─ sitemap.ts, robots.ts
 │  └─ globals.css        # design system (Tailwind 4 @theme)
@@ -113,6 +116,8 @@ src/
    │  ├─ local.ts        # katalog demo in-memory
    │  └─ remote.ts       # adapter API JSON + normalizer
    ├─ data/catalog.ts    # seed 18 judul orisinal
+   ├─ db/                # SQLite: schema.sql, client, repository, seed
+   ├─ auth.ts            # sesi cookie admin (HMAC)
    ├─ user-store.ts      # localStorage: riwayat, progres, watchlist
    └─ utils.ts           # format tanggal/durasi, helper
 ```
@@ -122,7 +127,33 @@ src/
 
 ---
 
-## 4. Mengganti sumber data
+## 5. Panel admin & basis data
+
+Katalog bisa dioperasikan tanpa developer lewat `/admin`:
+
+```bash
+CAPTNIME_DATA_SOURCE=database
+CAPTNIME_ADMIN_PASSWORD=sandi-kuat-anda
+npm run build && npm start
+# buka http://localhost:3000/admin
+```
+
+- Login: satu kata sandi dari `CAPTNIME_ADMIN_PASSWORD`; sesi cookie `httpOnly`
+  bertanda tangan HMAC, berlaku 12 jam.
+- Kelola **judul** (metadata, genre, palet poster, publikasi), **episode**
+  (nomor, tanggal, filler), **server streaming** (HLS/MP4 + kualitas), dan
+  **subtitle** (.vtt, satu bisa jadi default).
+- Basis data: SQLite lewat `node:sqlite`, default `data/captnime.db`. Saat masih
+  kosong, database otomatis diisi 18 judul dari katalog.
+- Halaman publik memakai ISR; setiap penyimpanan memicu `revalidatePath()` +
+  invalidasi cache provider, jadi perubahan tampil segera.
+- Pindah ke Postgres nanti hanya menyentuh `schema.sql` + `repository.ts`.
+
+Rincian skema, backup, deployment, dan migrasi: [`docs/DATABASE.md`](docs/DATABASE.md).
+
+---
+
+## 6. Mengganti sumber data
 
 ```bash
 # .env.local
@@ -148,7 +179,7 @@ Kalau bentuk respons API Anda berbeda, cukup sesuaikan `mapAnime()` di
 
 ---
 
-## 5. Soal sumber konten (penting)
+## 7. Soal sumber konten (penting)
 
 Repo ini **tidak** berisi dan **tidak** menyalurkan materi berhak cipta pihak
 mana pun.
@@ -170,11 +201,12 @@ adapter-nya dipasang di sisi server Anda melalui `RemoteProvider`.
 
 ---
 
-## 6. Roadmap berikutnya
+## 8. Roadmap berikutnya
 
-1. **Autentikasi** (Better Auth / NextAuth) → watchlist & progres pindah ke database.
-2. **Database** (Postgres + Prisma/Drizzle) untuk katalog, episode, dan server.
-3. **Admin CMS** untuk CRUD judul, episode, dan link server.
-4. **Transcoding pipeline** (FFmpeg + HLS multi-bitrate) bila Anda meng-host video sendiri.
-5. **CDN + rate limiting** di depan endpoint manifest.
-6. **Notifikasi rilis** (web push) untuk judul di daftar tonton.
+1. ~~Database + Admin CMS~~ — **selesai** di Fase 1 (`node:sqlite` + `/admin`).
+2. **Autentikasi pengguna** (Better Auth / NextAuth) → watchlist & progres pindah dari
+   `localStorage` ke database, peran admin per akun.
+3. **Hosting video** (FFmpeg + HLS multi-bitrate, object storage, signed URL).
+4. **CDN + rate limiting** di depan endpoint manifest.
+5. **Notifikasi rilis** (web push) untuk judul di daftar tonton.
+6. **Migrasi Postgres** bila penulis data atau trafik sudah banyak (lihat docs/DATABASE.md).
