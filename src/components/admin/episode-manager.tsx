@@ -154,6 +154,7 @@ function EpisodeBlock({ slug, episode }: { slug: string; episode: AdminEpisodeRo
                   <select name="type" className={inputClass}>
                     <option value="hls">hls</option>
                     <option value="mp4">mp4</option>
+                    <option value="embed">embed</option>
                   </select>
                 </Field>
                 <Field label="Kualitas">
@@ -168,7 +169,10 @@ function EpisodeBlock({ slug, episode }: { slug: string; episode: AdminEpisodeRo
                   <input name="note" placeholder="opsional" className={inputClass} />
                 </Field>
               </div>
-              <Field label="URL stream (.m3u8 / .mp4)">
+              <Field
+                label="URL stream / embed"
+                hint="hls: .m3u8 · mp4: berkas langsung · embed: tautan YouTube/Vimeo/Dailymotion/Bilibili resmi"
+              >
                 <input
                   name="url"
                   required

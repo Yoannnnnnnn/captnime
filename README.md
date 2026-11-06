@@ -208,7 +208,27 @@ Kalau bentuk respons API Anda berbeda, cukup sesuaikan `mapAnime()` di
 
 ---
 
-## 8. Soal sumber konten (penting)
+## 8. Sumber video & biaya
+
+Tiga jalur didukung, dipilih per server di panel admin:
+
+| Tipe | Isi | Biaya |
+| --- | --- | --- |
+| `embed` | Tautan YouTube/Vimeo/Dailymotion/Bilibili resmi; dimuat dalam iframe dengan allowlist host | Rp0 |
+| `hls` / `mp4` | Berkas milik sendiri atau CDN mitra | Sesuai CDN |
+| `hls` + `CAPTNIME_MEDIA_BASE_URL` | Path relatif (`/videos/…`) otomatis diberi awalan CDN | Sesuai CDN |
+
+Keputusan untuk tahap ini: **embed + URL eksternal** (tanpa biaya), dengan jalur
+Cloudflare R2 disiapkan lewat satu env var — bukan hosting video sendiri.
+
+Hitungan singkat (20 judul × 12 episode, 1080p, 600 GB ditonton/bulan):
+R2 ±**$4/bulan** (egress $0) vs Bunny Asia ±$21 vs Cloudflare Stream ±$65.
+Angka lengkap, konfigurasi FFmpeg + R2, dan catatan legalitas:
+[`docs/VIDEO.md`](docs/VIDEO.md).
+
+---
+
+## 9. Soal sumber konten (penting)
 
 Repo ini **tidak** berisi dan **tidak** menyalurkan materi berhak cipta pihak
 mana pun.
@@ -230,14 +250,16 @@ adapter-nya dipasang di sisi server Anda melalui `RemoteProvider`.
 
 ---
 
-## 9. Roadmap berikutnya
+## 10. Roadmap berikutnya
 
 1. ~~Database + Admin CMS~~ — **selesai** di Fase 1 (`node:sqlite` + `/admin`).
 2. ~~Autentikasi pengguna~~ — **selesai** di Fase 2 (scrypt + sesi database, sinkron
    riwayat & daftar tonton).
 3. **Penyempurnaan akun** — verifikasi email, reset/ganti kata sandi, hapus akun,
    opsional OAuth. Lihat batasan di `docs/AUTENTIKASI.md`.
-4. **Hosting video** (FFmpeg + HLS multi-bitrate, object storage, signed URL).
+4. **Hosting video** — *sebagian*: tiga jalur sumber (embed, HLS/MP4 eksternal,
+   CDN base) sudah ada. Berikutnya: unggah dari panel, FFmpeg pipeline terpisah,
+   signed URL/anti-hotlink bila konten berlisensi sudah tersedia (`docs/VIDEO.md`).
 5. **CDN + rate limiting** di depan endpoint manifest dan `/api/me/*`.
 6. **Notifikasi rilis** (web push) untuk judul di daftar tonton.
 7. **Migrasi Postgres** bila penulis data atau trafik sudah banyak (lihat docs/DATABASE.md).

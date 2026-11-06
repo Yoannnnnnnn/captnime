@@ -98,6 +98,13 @@ export function genreSlug(input: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
+/** Batasi nilai kolom `type` ke tiga bentuk yang dikenal UI. */
+function toServerType(value: string): "hls" | "mp4" | "embed" {
+  if (value === "mp4") return "mp4";
+  if (value === "embed") return "embed";
+  return "hls";
+}
+
 function transaction<T>(work: () => T): T {
   const db = getDb();
   db.exec("BEGIN");
@@ -161,7 +168,7 @@ export function loadAllAnime(includeUnpublished = false): Anime[] {
     list.push({
       id: String(row.id),
       label: row.label,
-      type: row.type === "mp4" ? "mp4" : "hls",
+      type: toServerType(row.type),
       url: row.url,
       quality: row.quality,
       note: row.note ?? undefined,
@@ -353,7 +360,7 @@ export function getAdminAnime(slug: string): AdminAnime | null {
         dbId: s.id,
         id: String(s.id),
         label: s.label,
-        type: s.type === "mp4" ? ("mp4" as const) : ("hls" as const),
+        type: toServerType(s.type),
         url: s.url,
         quality: s.quality,
         note: s.note ?? undefined,
@@ -649,7 +656,7 @@ export function addServer(input: ServerWriteInput): number {
     .run(
       input.episodeId,
       input.label,
-      input.type === "mp4" ? "mp4" : "hls",
+      toServerType(input.type),
       input.url,
       input.quality,
       input.note ?? null,
