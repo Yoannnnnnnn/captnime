@@ -75,9 +75,10 @@ export async function registerAction(formData: FormData) {
   await startSession(user.id);
   // Kirim tautan verifikasi. Kegagalan email tidak boleh menggagalkan
   // pendaftaran — pengguna tetap masuk dan bisa meminta kirim ulang.
-  await sendVerificationEmail(user);
+  const mail = await sendVerificationEmail(user);
+  const notice = mail.ok ? "dikirim" : mail.skipped ? "belum-aktif" : "gagal";
 
-  redirect(next === "/akun" ? "/akun?verifikasi=dikirim" : next);
+  redirect(next === "/akun" ? `/akun?verifikasi=${notice}` : next);
 }
 
 export async function loginAction(formData: FormData) {
@@ -123,7 +124,8 @@ export async function resendVerificationAction(_formData: FormData) {
   noteFailedAttempt(key);
 
   const result = await sendVerificationEmail(user);
-  redirect(result.ok ? "/akun?verifikasi=dikirim" : "/akun?verifikasi=gagal");
+  if (result.ok) redirect("/akun?verifikasi=dikirim");
+  redirect(result.skipped ? "/akun?verifikasi=belum-aktif" : "/akun?verifikasi=gagal");
 }
 
 /**

@@ -12,6 +12,7 @@ import {
   resendVerificationAction,
 } from "@/app/auth-actions";
 import { requireUser } from "@/lib/auth-user";
+import { isEmailConfigured } from "@/lib/email";
 import {
   accountStats,
   listProgress,
@@ -58,6 +59,10 @@ const NOTICES: Record<string, { tone: "ok" | "error"; text: string }> = {
     tone: "error",
     text: "Email verifikasi gagal dikirim. Coba lagi beberapa saat lagi.",
   },
+  "verifikasi=belum-aktif": {
+    tone: "error",
+    text: "Pengiriman email belum diaktifkan di server ini, jadi tautan verifikasi tidak dikirim. Hubungi operator situs.",
+  },
   "verifikasi=batas": {
     tone: "error",
     text: "Terlalu sering meminta tautan verifikasi. Coba lagi dalam 15 menit.",
@@ -76,6 +81,7 @@ export default async function AccountPage({
   };
 
   const user = await requireUser("/akun");
+  const emailConfigured = isEmailConfigured();
   const recoveryCode = (await cookies()).get("captnime_recovery_code")?.value ?? null;
   const stats = accountStats(user.id);
   const [progress, watchlist] = [
@@ -122,8 +128,19 @@ export default async function AccountPage({
           <p className="mt-1 text-[12px] leading-relaxed text-text-2">
             Akun tetap bisa dipakai untuk menonton. Yang belum aktif hanya sinkronisasi
             daftar tonton dan riwayat tontonan antar perangkat — datanya masih tersimpan
-            di peramban ini. Tautan verifikasi sudah kami kirim ke{" "}
-            <span className="text-text">{user.email}</span>.
+            di peramban ini.{" "}
+            {emailConfigured ? (
+              <>
+                Tautan verifikasi dikirim ke{" "}
+                <span className="text-text">{user.email}</span>.
+              </>
+            ) : (
+              <>
+                Pengiriman email belum diaktifkan di server ini, jadi tautan
+                verifikasi tidak bisa dikirim ke{" "}
+                <span className="text-text">{user.email}</span>.
+              </>
+            )}
           </p>
           <form action={resendVerificationAction} className="mt-3">
             <button type="submit" className={btnGhost}>
