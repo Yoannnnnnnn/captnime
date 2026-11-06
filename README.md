@@ -4,10 +4,10 @@ Platform streaming anime — antarmuka cepat, katalog rapi, subtitle Indonesia, 
 lanjut-tonton otomatis. Dibangun dengan **Next.js 15 (App Router) + TypeScript +
 Tailwind CSS 4**.
 
-> **Status:** MVP fitur inti selesai. Fase 1 (CMS + basis data) sudah ada:
-> katalog dapat dikelola sendiri lewat `/admin` tanpa deploy ulang. Lapisan
-> provider membuat aplikasi siap disambungkan ke sumber data produksi tanpa
-> mengubah satu pun komponen UI.
+> **Status:** MVP fitur inti selesai, ditambah Fase 1 (CMS + basis data) dan
+> Fase 2 (akun pengguna). Katalog dikelola lewat `/admin` tanpa deploy ulang,
+> dan riwayat/daftar tonton tersimpan di akun — bukan cuma di satu perangkat.
+> Tamu tetap bisa menonton tanpa login.
 
 ---
 
@@ -51,7 +51,8 @@ Tidak perlu konfigurasi apa pun — katalog demo sudah terisi.
 | **Detail anime** | Backdrop dinamis, poster, sinopsis, tabel informasi (studio/musim/durasi/jadwal), daftar episode dengan progres, anime terkait, tombol daftar tonton. |
 | **Pemutar** | HLS (hls.js) & MP4, pilih server, subtitle Indonesia/Inggris on-off, resume dari posisi terakhir, auto-next dengan hitungan, kecepatan 0.75×–2×, PiP, layar penuh, pintasan keyboard, penanganan error + tombol ganti server. |
 | **Jadwal** | Jadwal rilis mingguan, hari ini disorot otomatis. |
-| **Daftar Saya** | Watchlist + riwayat tontonan (progres per episode) tersimpan di perangkat. |
+| **Daftar Saya** | Watchlist + riwayat tontonan. Tamu: `localStorage`. Login: tabel `progress`/`watchlist`, tersinkron antar perangkat. |
+| **Akun** | `/masuk`, `/daftar`, `/akun`. Kata sandi scrypt + salt, sesi cookie `httpOnly` bertanda token acak (yang disimpan hanya hash-nya), pembatasan 6 percobaan gagal/15 menit, data tamu disalin otomatis saat pertama masuk. Lihat [`docs/AUTENTIKASI.md`](docs/AUTENTIKASI.md). |
 | **Panel admin** | `/admin`: login berbasis password env, CRUD judul, episode, server streaming, dan subtitle. Perubahan langsung tayang lewat revalidasi — tanpa deploy ulang. Lihat [`docs/DATABASE.md`](docs/DATABASE.md). |
 | **UX** | Mobile-first, bottom tab bar, drawer menu, skeleton loading, halaman 404, `prefers-reduced-motion`, fokus keyboard, aria-label, metadata SEO + sitemap + PWA manifest. |
 
@@ -105,6 +106,9 @@ src/
 │  ├─ schedule/          # jadwal rilis
 │  ├─ my-list/           # watchlist & riwayat
 │  ├─ admin/             # panel CMS (login + panel terproteksi)
+│  ├─ masuk/, daftar/    # autentikasi pengguna
+│  ├─ akun/              # profil + ringkasan aktivitas
+│  ├─ api/me/            # state, progress, watchlist, import
 │  ├─ manifest.ts        # PWA
 │  ├─ sitemap.ts, robots.ts
 │  └─ globals.css        # design system (Tailwind 4 @theme)
@@ -118,6 +122,8 @@ src/
    ├─ data/catalog.ts    # seed 18 judul orisinal
    ├─ db/                # SQLite: schema.sql, client, repository, seed
    ├─ auth.ts            # sesi cookie admin (HMAC)
+   ├─ auth-user.ts       # scrypt, sesi pengguna, rate limit
+   ├─ db/accounts.ts     # users, sessions, watchlist, progress
    ├─ user-store.ts      # localStorage: riwayat, progres, watchlist
    └─ utils.ts           # format tanggal/durasi, helper
 ```
@@ -153,7 +159,30 @@ Rincian skema, backup, deployment, dan migrasi: [`docs/DATABASE.md`](docs/DATABA
 
 ---
 
-## 6. Mengganti sumber data
+## 6. Akun pengguna
+
+```bash
+# tanpa konfigurasi tambahan — tabel dibuat otomatis di database yang sama
+npm run build && npm start
+# /daftar → /masuk → /akun
+```
+
+- Kata sandi: **scrypt** (N=16384, r=8, p=1, salt acak) — bukan plaintext, bukan
+  MD5/SHA biasa.
+- Sesi: token 32 byte di cookie `httpOnly` + `SameSite=Lax`; database hanya
+  menyimpan SHA-256 token. Berlaku 30 hari.
+- Percobaan masuk dibatasi 6 kali per IP+email dalam 15 menit.
+- Pengunjung tanpa akun tetap bisa menonton dan memakai "Daftar Saya" lewat
+  `localStorage`. Saat pertama kali masuk, data tamu itu **disalin ke akun**
+  (data server yang lebih baru menang) lalu kunci lokal dibersihkan.
+- Mode akun tetap memakai katalog dari provider mana pun; metadata judul
+  dilengkapi dari provider aktif saat state dikirim ke klien.
+
+Rincian tabel, endpoint, keamanan, dan batasan: [`docs/AUTENTIKASI.md`](docs/AUTENTIKASI.md).
+
+---
+
+## 7. Mengganti sumber data
 
 ```bash
 # .env.local
@@ -179,7 +208,7 @@ Kalau bentuk respons API Anda berbeda, cukup sesuaikan `mapAnime()` di
 
 ---
 
-## 7. Soal sumber konten (penting)
+## 8. Soal sumber konten (penting)
 
 Repo ini **tidak** berisi dan **tidak** menyalurkan materi berhak cipta pihak
 mana pun.
@@ -201,12 +230,14 @@ adapter-nya dipasang di sisi server Anda melalui `RemoteProvider`.
 
 ---
 
-## 8. Roadmap berikutnya
+## 9. Roadmap berikutnya
 
 1. ~~Database + Admin CMS~~ — **selesai** di Fase 1 (`node:sqlite` + `/admin`).
-2. **Autentikasi pengguna** (Better Auth / NextAuth) → watchlist & progres pindah dari
-   `localStorage` ke database, peran admin per akun.
-3. **Hosting video** (FFmpeg + HLS multi-bitrate, object storage, signed URL).
-4. **CDN + rate limiting** di depan endpoint manifest.
-5. **Notifikasi rilis** (web push) untuk judul di daftar tonton.
-6. **Migrasi Postgres** bila penulis data atau trafik sudah banyak (lihat docs/DATABASE.md).
+2. ~~Autentikasi pengguna~~ — **selesai** di Fase 2 (scrypt + sesi database, sinkron
+   riwayat & daftar tonton).
+3. **Penyempurnaan akun** — verifikasi email, reset/ganti kata sandi, hapus akun,
+   opsional OAuth. Lihat batasan di `docs/AUTENTIKASI.md`.
+4. **Hosting video** (FFmpeg + HLS multi-bitrate, object storage, signed URL).
+5. **CDN + rate limiting** di depan endpoint manifest dan `/api/me/*`.
+6. **Notifikasi rilis** (web push) untuk judul di daftar tonton.
+7. **Migrasi Postgres** bila penulis data atau trafik sudah banyak (lihat docs/DATABASE.md).

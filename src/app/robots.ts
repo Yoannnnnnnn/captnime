@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/my-list"],
+        disallow: ["/my-list", "/akun", "/masuk", "/daftar", "/admin", "/api/"],
       },
     ],
     sitemap: "https://captnime.app/sitemap.xml",

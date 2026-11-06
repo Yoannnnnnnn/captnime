@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, Search, X, Bookmark, CalendarDays, Compass, House } from "lucide-react";
+import { Menu, Search, X, Bookmark, CalendarDays, Compass, House, LogIn, UserRound } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { useSession } from "@/components/session-provider";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -21,6 +22,7 @@ const NAV = [
 export function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
+  const { user, loading } = useSession();
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -153,6 +155,27 @@ export function SiteHeader() {
                 );
               })}
             </nav>
+
+            <div className="mt-3 border-t border-line pt-3">
+              {!loading && user ? (
+                <Link
+                  href="/akun"
+                  className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-text-2 transition-colors hover:bg-surface-2 hover:text-text"
+                >
+                  <UserRound className="size-4" />
+                  <span className="flex-1 truncate">Akun {user.name}</span>
+                </Link>
+              ) : !loading ? (
+                <Link
+                  href="/masuk"
+                  className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-text-2 transition-colors hover:bg-surface-2 hover:text-text"
+                >
+                  <LogIn className="size-4" />
+                  <span className="flex-1">Masuk</span>
+                  <span className="text-[11px] text-gold">Daftar gratis</span>
+                </Link>
+              ) : null}
+            </div>
           </div>
         </div>
       )}

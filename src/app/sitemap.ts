@@ -10,7 +10,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/`, changeFrequency: "daily", priority: 1 },
     { url: `${base}/browse`, changeFrequency: "daily", priority: 0.9 },
     { url: `${base}/schedule`, changeFrequency: "daily", priority: 0.7 },
-    { url: `${base}/my-list`, changeFrequency: "monthly", priority: 0.3 },
   ];
 
   const animeRoutes: MetadataRoute.Sitemap = [];

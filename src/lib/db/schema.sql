@@ -94,3 +94,48 @@ CREATE INDEX IF NOT EXISTS idx_episodes_anime    ON episodes(anime_id, number);
 CREATE INDEX IF NOT EXISTS idx_servers_episode   ON servers(episode_id);
 CREATE INDEX IF NOT EXISTS idx_subtitles_episode ON subtitles(episode_id);
 CREATE INDEX IF NOT EXISTS idx_anime_genres_genre ON anime_genres(genre_id);
+
+-- =============================================================================
+-- Fase 2 — akun pengguna
+-- =============================================================================
+-- Password disimpan sebagai hash scrypt (format: scrypt$N$salt$hash) oleh
+-- node:crypto; token sesi disimpan sebagai SHA-256, bukan nilai mentahnya.
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS users (
+  id             TEXT PRIMARY KEY,
+  email          TEXT NOT NULL UNIQUE,   -- selalu huruf kecil
+  name           TEXT NOT NULL,
+  password_hash  TEXT NOT NULL,
+  created_at     TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+  token_hash  TEXT PRIMARY KEY,          -- sha256(token mentah di cookie)
+  user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at  INTEGER NOT NULL,          -- epoch milidetik
+  created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Riwayat tontonan: satu baris per judul (episode terakhir + posisi).
+CREATE TABLE IF NOT EXISTS progress (
+  user_id         TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  anime_slug      TEXT NOT NULL,
+  episode_number  INTEGER NOT NULL,
+  position        INTEGER NOT NULL DEFAULT 0,   -- detik
+  duration        INTEGER NOT NULL DEFAULT 0,   -- detik
+  updated_at      TEXT NOT NULL DEFAULT (datetime('now')),
+  PRIMARY KEY (user_id, anime_slug)
+);
+
+CREATE TABLE IF NOT EXISTS watchlist (
+  user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  anime_slug  TEXT NOT NULL,
+  added_at    TEXT NOT NULL DEFAULT (datetime('now')),
+  PRIMARY KEY (user_id, anime_slug)
+);
+
+CREATE INDEX IF NOT EXISTS idx_sessions_user    ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
+CREATE INDEX IF NOT EXISTS idx_progress_updated ON progress(user_id, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_watchlist_added  ON watchlist(user_id, added_at DESC);
