@@ -117,6 +117,13 @@ batasannya ada di **`docs/EMAIL.md`**. Ringkasnya:
 Bila variabel Mailjet kosong, fitur ini mati dengan sopan: pendaftaran tetap
 berhasil, dan `/lupa-sandi` memberi tahu bahwa pengiriman email belum aktif.
 
+### Ganti alamat email
+`/akun` → bagian **Alamat email**: perlu kata sandi saat ini. Alamat baru harus
+valid dan belum dipakai akun lain. Setelah tersimpan, `email_verified_at`
+dikosongkan, seluruh token lama dihapus, dan tautan verifikasi dikirim ke alamat
+baru. Sesi tetap aktif agar pengguna tidak terkunci, tetapi sinkronisasi server
+berhenti sampai verifikasi selesai.
+
 ### Kode pemulihan (cadangan bila email tak bisa dibuka)
 Selain tautan email, tersedia kode sekali pakai:
 
@@ -179,8 +186,9 @@ soft delete: data benar-benar hilang.
    mendaftar sampai baris lama dibersihkan. Ini konsekuensi wajar dari
    kebijakan lunak, tetapi perlu penanganan (mis. email pembatalan
    kepemilikan) sebelum dibuka luas.
-2. **Belum ada ganti alamat email** di `/akun`, karena itu belum ada alur
-   verifikasi ulang alamat baru.
+2. **Ganti alamat email** ada di `/akun` (perlu kata sandi). Verifikasi
+   dikosongkan dan token lama dihapus; belum ada masa tenggang atau
+   pemberitahuan ke alamat lama.
 3. **Belum ada webhook bounce/complaint** dari Mailjet.
 4. **Belum ada login sosial (OAuth)** atau 2FA.
 5. **Belum ada peran**: panel admin masih memakai kata sandi lingkungan

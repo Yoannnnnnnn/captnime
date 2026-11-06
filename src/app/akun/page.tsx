@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Bookmark, Clock3, KeyRound, LogOut, MailCheck, MailWarning, ShieldCheck } from "lucide-react";
 import { cookies } from "next/headers";
 import {
+  changeEmailAction,
   changePasswordAction,
   createRecoveryCodeAction,
   deleteAccountAction,
@@ -62,6 +63,31 @@ const NOTICES: Record<string, { tone: "ok" | "error"; text: string }> = {
   "verifikasi=belum-aktif": {
     tone: "error",
     text: "Pengiriman email belum diaktifkan di server ini, jadi tautan verifikasi tidak dikirim. Hubungi operator situs.",
+  },
+  "email=dikirim": {
+    tone: "ok",
+    text: "Alamat email diganti. Tautan verifikasi sudah dikirim ke alamat baru.",
+  },
+  "email=belum-aktif": {
+    tone: "error",
+    text: "Alamat email diganti, tetapi pengiriman email belum aktif di server ini — verifikasi belum bisa dilakukan.",
+  },
+  "email=gagal": {
+    tone: "error",
+    text: "Alamat email diganti, tetapi email verifikasi gagal dikirim. Coba kirim ulang dari banner di atas.",
+  },
+  "error=email-sandi": {
+    tone: "error",
+    text: "Kata sandi salah — alamat email tidak diubah.",
+  },
+  "error=email-format": { tone: "error", text: "Alamat email tidak valid." },
+  "error=email-sama": {
+    tone: "error",
+    text: "Alamat itu sama dengan email Anda sekarang.",
+  },
+  "error=email-dipakai": {
+    tone: "error",
+    text: "Alamat itu sudah dipakai akun lain.",
   },
   "verifikasi=batas": {
     tone: "error",
@@ -350,6 +376,46 @@ export default async function AccountPage({
         </div>
 
         <div className="space-y-4">
+          <div className="sticker p-5">
+            <h2 className="text-sm font-semibold tracking-tight text-text">
+              Alamat email
+            </h2>
+            <p className="mt-0.5 text-[12px] leading-relaxed text-text-3">
+              Sekarang: <span className="text-text-2">{user.email}</span>
+              {user.emailVerified ? " (terverifikasi)" : " (belum diverifikasi)"}. Alamat
+              baru perlu diverifikasi ulang; sinkronisasi server berhenti sampai
+              verifikasi selesai.
+            </p>
+
+            <form action={changeEmailAction} className="mt-3 space-y-3">
+              <label className="block space-y-1.5">
+                <span className={labelClass}>Alamat email baru</span>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  autoComplete="email"
+                  className={inputClass}
+                  placeholder="nama@email.com"
+                />
+              </label>
+              <label className="block space-y-1.5">
+                <span className={labelClass}>Kata sandi saat ini</span>
+                <input
+                  type="password"
+                  name="password"
+                  required
+                  autoComplete="current-password"
+                  className={inputClass}
+                />
+              </label>
+              <button type="submit" className={btnGhost}>
+                <MailCheck className="size-3.5" aria-hidden />
+                Simpan alamat email
+              </button>
+            </form>
+          </div>
+
           <div className="sticker p-5">
             <h2 className="text-sm font-semibold tracking-tight text-text">
               Lupa kata sandi nanti?

@@ -10,6 +10,7 @@ import {
   deleteUserSessions,
   findUserByEmail,
   markEmailVerified,
+  updateUserEmail,
   setPasswordHash,
   setRecoveryHash,
   type PublicUser,
@@ -26,6 +27,7 @@ import {
   hashPassword,
   hashRecoveryCode,
   hashToken,
+  isValidEmail,
   normalizeEmailToken,
   noteFailedAttempt,
   requireUser,
@@ -147,6 +149,36 @@ export async function verifyEmailAction(formData: FormData) {
   if (current?.id === row.user_id) redirect("/akun?verifikasi=berhasil");
 
   redirect("/masuk?verifikasi=1");
+}
+
+/**
+ * Ganti alamat email akun.
+ *
+ * Alamat baru belum terbukti milik pengguna, jadi verifikasi dikosongkan dan
+ * tautan verifikasi dikirim ulang ke alamat baru. Sesi tetap aktif supaya
+ * pengguna tidak terkunci di luar akunnya sendiri — cukup kehilangan
+ * sinkronisasi sampai email baru diverifikasi.
+ */
+export async function changeEmailAction(formData: FormData) {
+  const user = await requireUser("/akun");
+  const email = str(formData, "email").toLowerCase();
+  const password = String(formData.get("password") ?? "");
+
+  const row = findUserByEmail(user.email);
+  if (!row || !verifyPassword(password, row.password_hash)) {
+    redirect("/akun?error=email-sandi");
+  }
+  if (!isValidEmail(email)) redirect("/akun?error=email-format");
+  if (email === user.email) redirect("/akun?error=email-sama");
+
+  const existing = findUserByEmail(email);
+  if (existing && existing.id !== user.id) redirect("/akun?error=email-dipakai");
+
+  updateUserEmail(user.id, email);
+
+  const mail = await sendVerificationEmail({ id: user.id, name: user.name, email });
+  const notice = mail.ok ? "dikirim" : mail.skipped ? "belum-aktif" : "gagal";
+  redirect(`/akun?email=${notice}`);
 }
 
 /* ------------------------------------------------------------------ */
