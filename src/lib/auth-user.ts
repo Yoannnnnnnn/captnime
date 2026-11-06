@@ -21,9 +21,12 @@ import {
  * - Cookie `Secure` hanya saat permintaan lewat HTTPS, supaya login tetap
  *   berfungsi pada `npm start` di http://localhost.
  *
- * Sengaja tanpa dependensi eksternal. Bila nanti butuh login Google/GitHub,
- * OAuth, atau verifikasi email, pasang better-auth/NextAuth lalu petakan
- * ke tabel `users` yang sudah ada.
+ * - Email: tautan verifikasi & reset kata sandi memakai token acak 32 byte
+ *   yang di database disimpan sebagai SHA-256 (tabel `email_tokens`).
+ *
+ * Sengaja tanpa dependensi eksternal. Bila nanti butuh login Google/GitHub
+ * atau 2FA, pasang better-auth/NextAuth lalu petakan ke tabel `users` yang
+ * sudah ada.
  */
 
 export const SESSION_COOKIE = "captnime_session";
@@ -96,6 +99,33 @@ export function hashRecoveryCode(code: string): string {
 export function verifyRecoveryCode(code: string, stored: string | null): boolean {
   if (!stored) return false;
   return verifyPassword(normalizeRecoveryCode(code), stored);
+}
+
+/* ------------------------------------------------------------------ */
+/* Token email (verifikasi & reset kata sandi)                        */
+/* ------------------------------------------------------------------ */
+
+/** Umur tautan verifikasi email. */
+export const VERIFY_TTL_MS = 24 * 60 * 60_000;
+/** Umur tautan reset kata sandi — sengaja pendek. */
+export const RESET_TTL_MS = 60 * 60_000;
+
+/** Token acak 32 byte, aman untuk dipakai di URL (base64url). */
+export function generateEmailToken(): string {
+  return crypto.randomBytes(32).toString("base64url");
+}
+
+/**
+ * Yang disimpan di database hanya SHA-256 token. Kebocoran isi database
+ * tidak memberi tautan yang bisa dipakai.
+ */
+export function hashEmailToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+/** Token dari URL: buang spasi, tolak bentuk aneh sebelum menyentuh database. */
+export function normalizeEmailToken(raw: string): string {
+  return raw.trim().replace(/[^A-Za-z0-9_-]/g, "").slice(0, 64);
 }
 
 export function validateRegistration(input: {

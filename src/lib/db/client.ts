@@ -77,6 +77,9 @@ function migrate(db: DatabaseSync): void {
   if (!userColumns.some((c) => c.name === "recovery_hash")) {
     db.exec("ALTER TABLE users ADD COLUMN recovery_hash TEXT");
   }
+  if (!userColumns.some((c) => c.name === "email_verified_at")) {
+    db.exec("ALTER TABLE users ADD COLUMN email_verified_at TEXT");
+  }
 }
 
 export function getDb(): DatabaseSync {

@@ -3,24 +3,30 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
+  consumeEmailToken,
   createUser,
   deleteOtherSessions,
   deleteUser,
   deleteUserSessions,
   findUserByEmail,
+  markEmailVerified,
   setPasswordHash,
   setRecoveryHash,
   type PublicUser,
 } from "@/lib/db/accounts";
+import { sendResetEmail, sendVerificationEmail } from "@/lib/auth-email";
+import { isEmailConfigured } from "@/lib/email";
 import {
   SESSION_COOKIE,
   clearAttempts,
   endSession,
   generateRecoveryCode,
   getCurrentUser,
+  hashEmailToken,
   hashPassword,
   hashRecoveryCode,
   hashToken,
+  normalizeEmailToken,
   noteFailedAttempt,
   requireUser,
   startSession,
@@ -67,7 +73,11 @@ export async function registerAction(formData: FormData) {
   }
 
   await startSession(user.id);
-  redirect(next);
+  // Kirim tautan verifikasi. Kegagalan email tidak boleh menggagalkan
+  // pendaftaran — pengguna tetap masuk dan bisa meminta kirim ulang.
+  await sendVerificationEmail(user);
+
+  redirect(next === "/akun" ? "/akun?verifikasi=dikirim" : next);
 }
 
 export async function loginAction(formData: FormData) {
@@ -98,6 +108,44 @@ export async function logoutAction() {
   redirect("/");
 }
 
+
+/* ------------------------------------------------------------------ */
+/* Verifikasi email                                                   */
+/* ------------------------------------------------------------------ */
+
+/** Kirim ulang tautan verifikasi. Dibatasi 6 kali / 15 menit per pengguna. */
+export async function resendVerificationAction(_formData: FormData) {
+  const user = await requireUser("/akun");
+  if (user.emailVerified) redirect("/akun?verifikasi=sudah");
+
+  const key = `verifikasi-kirim:${user.id}`;
+  if (tooManyAttempts(key)) redirect("/akun?verifikasi=batas");
+  noteFailedAttempt(key);
+
+  const result = await sendVerificationEmail(user);
+  redirect(result.ok ? "/akun?verifikasi=dikirim" : "/akun?verifikasi=gagal");
+}
+
+/**
+ * Konfirmasi token dari tautan email.
+ *
+ * Sengaja lewat POST, bukan GET: pemindai tautan di klien email sering
+ * membuka URL lebih dulu, dan verifikasi tidak boleh terjadi karena mesin.
+ */
+export async function verifyEmailAction(formData: FormData) {
+  const token = normalizeEmailToken(String(formData.get("token") ?? ""));
+  if (!token) redirect("/verifikasi?error=kosong");
+
+  const row = consumeEmailToken(hashEmailToken(token), "verify");
+  if (!row) redirect("/verifikasi?error=kedaluwarsa");
+
+  markEmailVerified(row.user_id);
+
+  const current = await getCurrentUser();
+  if (current?.id === row.user_id) redirect("/akun?verifikasi=berhasil");
+
+  redirect("/masuk?verifikasi=1");
+}
 
 /* ------------------------------------------------------------------ */
 /* Keamanan akun                                                      */
@@ -186,7 +234,61 @@ export async function deleteAccountAction(formData: FormData) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Lupa kata sandi (kode pemulihan, tanpa email)                      */
+/* Lupa kata sandi                                                     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Minta tautan reset lewat email.
+ *
+ * Respons selalu sama, terdaftar atau tidak — supaya halaman ini tidak bisa
+ * dipakai menebak email mana yang punya akun. Yang berbeda hanya isi kotak
+ * masuk orang yang memang punya akun.
+ */
+export async function requestResetAction(formData: FormData) {
+  const email = str(formData, "email").toLowerCase();
+  if (!email) redirect("/lupa-sandi?error=kosong");
+
+  // Kalau email belum dikonfigurasi, katakan terus terang alih-alih
+  // menjanjikan tautan yang tidak akan pernah datang.
+  if (!isEmailConfigured()) redirect("/lupa-sandi?error=email-off");
+
+  const key = `reset-kirim:${await clientKey(email)}`;
+  if (tooManyAttempts(key)) redirect("/lupa-sandi?error=batas");
+  noteFailedAttempt(key);
+
+  const row = findUserByEmail(email);
+  if (row) await sendResetEmail(row);
+
+  redirect("/lupa-sandi?terkirim=1");
+}
+
+/** Selesaikan reset dengan token dari email. */
+export async function completeResetAction(formData: FormData) {
+  const token = normalizeEmailToken(String(formData.get("token") ?? ""));
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+
+  const back = (error: string) =>
+    `/atur-ulang?error=${error}${token ? `&token=${encodeURIComponent(token)}` : ""}`;
+
+  if (!token) redirect("/atur-ulang?error=invalid");
+  if (password.length < 8) redirect(back("pendek"));
+  if (password !== confirm) redirect(back("beda"));
+
+  const row = consumeEmailToken(hashEmailToken(token), "reset");
+  if (!row) redirect("/atur-ulang?error=invalid");
+
+  setPasswordHash(row.user_id, hashPassword(password));
+  // Setelah reset: kode pemulihan lama tidak berlaku lagi dan semua sesi
+  // lama dikeluarkan, termasuk sesi penyerang yang mungkin masih hidup.
+  setRecoveryHash(row.user_id, null);
+  deleteUserSessions(row.user_id);
+
+  redirect("/masuk?reset=1");
+}
+
+/* ------------------------------------------------------------------ */
+/* Reset dengan kode pemulihan (tanpa email)                          */
 /* ------------------------------------------------------------------ */
 
 export async function resetPasswordAction(formData: FormData) {

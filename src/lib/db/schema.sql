@@ -110,7 +110,20 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash  TEXT NOT NULL,
   -- hash scrypt kode pemulihan (bukan kodenya). NULL = belum dibuat.
   recovery_hash  TEXT,
+  -- NULL = email belum diverifikasi. Diisi waktu verifikasi berhasil.
+  email_verified_at TEXT,
   created_at     TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Token sekali pakai yang dikirim lewat email (verifikasi & reset sandi).
+-- Yang disimpan hanya SHA-256 token; tautan aslinya cuma ada di email.
+CREATE TABLE IF NOT EXISTS email_tokens (
+  token_hash  TEXT PRIMARY KEY,
+  user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  purpose     TEXT NOT NULL,             -- 'verify' | 'reset'
+  email       TEXT NOT NULL,             -- tujuan saat dikirim (jejak audit)
+  expires_at  INTEGER NOT NULL,          -- epoch milidetik
+  created_at  TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
@@ -142,3 +155,4 @@ CREATE INDEX IF NOT EXISTS idx_sessions_user    ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_progress_updated ON progress(user_id, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_watchlist_added  ON watchlist(user_id, added_at DESC);
+CREATE INDEX IF NOT EXISTS idx_email_tokens_user ON email_tokens(user_id, purpose);

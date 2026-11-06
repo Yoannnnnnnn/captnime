@@ -35,6 +35,15 @@ const toInt = (value: unknown, fallback = 0) => {
 export async function POST(request: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Belum masuk" }, { status: 401 });
+  if (!user.emailVerified) {
+    return NextResponse.json(
+      {
+        error: "verifikasi",
+        message: "Verifikasi email dulu agar data perangkat ini bisa disalin ke akun.",
+      },
+      { status: 403 },
+    );
+  }
 
   let body: { history?: LocalHistory[]; watchlist?: LocalWatchlist[] };
   try {

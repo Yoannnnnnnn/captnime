@@ -39,10 +39,21 @@ export default function MyListPage() {
         <p className="mt-1 text-[13px] text-text-2">
           {sessionLoading ? (
             "Memeriksa akun…"
-          ) : user ? (
+          ) : user && user.emailVerified ? (
             <>
               Tersinkron dengan akun{" "}
               <span className="text-text">{user.name}</span> — ikut ke perangkat lain.
+            </>
+          ) : user ? (
+            <>
+              Tersimpan di peramban ini.{" "}
+              <Link
+                href="/akun"
+                className="text-gold underline-offset-4 hover:underline"
+              >
+                Verifikasi email
+              </Link>{" "}
+              agar ikut ke perangkat lain.
             </>
           ) : (
             <>

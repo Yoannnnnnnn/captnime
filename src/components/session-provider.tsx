@@ -15,6 +15,8 @@ export interface SessionUser {
   id: string;
   name: string;
   email: string;
+  /** False = email belum dikonfirmasi; sinkronisasi server belum aktif. */
+  emailVerified: boolean;
 }
 
 interface SessionState {
@@ -51,7 +53,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       if (!res.ok) throw new Error("gagal");
       const data = (await res.json()) as { user: SessionUser | null };
       setUser(data.user);
-      await setRemoteUser(data.user?.id ?? null);
+      // Selama email belum terverifikasi, store tetap memakai localStorage:
+      // perilakunya sama dengan tamu, jadi tidak ada tulis server yang ditolak.
+      await setRemoteUser(data.user?.emailVerified ? data.user.id : null);
     } catch {
       setUser(null);
       await setRemoteUser(null);

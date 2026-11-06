@@ -30,6 +30,7 @@ export default async function LoginPage({
   const next = one("next") ?? "/akun";
   const error = one("error");
   const justReset = one("reset") === "1";
+  const justVerified = one("verifikasi") === "1";
 
   if (await getCurrentUser()) redirect(next);
 
@@ -78,6 +79,16 @@ export default async function LoginPage({
               placeholder="••••••••"
             />
           </label>
+
+          {justVerified ? (
+            <p
+              role="status"
+              className="rounded-md border border-mint/40 bg-mint/10 px-3 py-2 text-[12.5px] leading-relaxed text-mint"
+            >
+              Email berhasil diverifikasi. Masuk untuk mengaktifkan sinkronisasi di
+              perangkat ini.
+            </p>
+          ) : null}
 
           {justReset ? (
             <p

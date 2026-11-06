@@ -13,6 +13,7 @@ export interface UserRow {
   name: string;
   password_hash: string;
   recovery_hash: string | null;
+  email_verified_at: string | null;
   created_at: string;
 }
 
@@ -20,6 +21,10 @@ export interface PublicUser {
   id: string;
   email: string;
   name: string;
+  /** False = email belum dikonfirmasi; fitur sinkronisasi dikunci. */
+  emailVerified: boolean;
+  /** ISO date saat email terverifikasi, atau null. */
+  emailVerifiedAt: string | null;
   createdAt: string;
 }
 
@@ -53,8 +58,12 @@ const toPublicUser = (row: UserRow): PublicUser => ({
   id: row.id,
   email: row.email,
   name: row.name,
+  emailVerified: Boolean(row.email_verified_at),
+  emailVerifiedAt: row.email_verified_at ?? null,
   createdAt: row.created_at,
 });
+
+export type EmailTokenPurpose = "verify" | "reset";
 
 export function newId(prefix: string): string {
   return `${prefix}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
@@ -109,6 +118,27 @@ export function setRecoveryHash(userId: string, hash: string | null): void {
   getDb().prepare(`UPDATE users SET recovery_hash = ? WHERE id = ?`).run(hash, userId);
 }
 
+export function markEmailVerified(userId: string): void {
+  getDb()
+    .prepare(
+      `UPDATE users SET email_verified_at = COALESCE(email_verified_at, ?) WHERE id = ?`,
+    )
+    .run(new Date().toISOString(), userId);
+}
+
+/** Hapus verifikasi (dipakai bila alamat email diganti di masa depan). */
+export function clearEmailVerified(userId: string): void {
+  getDb().prepare(`UPDATE users SET email_verified_at = NULL WHERE id = ?`).run(userId);
+}
+
+/** True bila pengguna sudah verifikasi email (dipakai untuk gerbang fitur). */
+export function isEmailVerified(userId: string): boolean {
+  const row = getDb()
+    .prepare(`SELECT email_verified_at FROM users WHERE id = ?`)
+    .get(userId) as { email_verified_at: string | null } | undefined;
+  return Boolean(row?.email_verified_at);
+}
+
 export function deleteUser(userId: string): void {
   // sessions/progress/watchlist ikut terhapus lewat ON DELETE CASCADE.
   getDb().prepare(`DELETE FROM users WHERE id = ?`).run(userId);
@@ -120,6 +150,67 @@ export function countUsers(): number {
       total: number;
     }
   ).total;
+}
+
+/* ------------------------------------------------------------------ */
+/* Token email (verifikasi & reset sandi)                             */
+/* ------------------------------------------------------------------ */
+
+export interface EmailTokenRow {
+  token_hash: string;
+  user_id: string;
+  purpose: EmailTokenPurpose;
+  email: string;
+  expires_at: number;
+}
+
+/**
+ * Simpan token baru. Token lama dengan tujuan yang sama untuk pengguna ini
+ * dihapus lebih dulu supaya hanya tautan terakhir yang berlaku — pengguna
+ * yang menekan "kirim ulang" tidak bingung dengan tautan lama.
+ */
+export function createEmailToken(input: {
+  tokenHash: string;
+  userId: string;
+  purpose: EmailTokenPurpose;
+  email: string;
+  expiresAt: number;
+}): void {
+  const db = getDb();
+  db.prepare(`DELETE FROM email_tokens WHERE user_id = ? AND purpose = ?`).run(
+    input.userId,
+    input.purpose,
+  );
+  db.prepare(
+    `INSERT INTO email_tokens (token_hash, user_id, purpose, email, expires_at)
+     VALUES (?,?,?,?,?)`,
+  ).run(input.tokenHash, input.userId, input.purpose, input.email, input.expiresAt);
+}
+
+/**
+ * Ambil token yang masih berlaku. Baris langsung dihapus (sekali pakai),
+ * termasuk saat sudah kedaluwarsa.
+ */
+export function consumeEmailToken(
+  tokenHash: string,
+  purpose: EmailTokenPurpose,
+): EmailTokenRow | null {
+  const db = getDb();
+  const row = db
+    .prepare(
+      `SELECT token_hash, user_id, purpose, email, expires_at
+         FROM email_tokens WHERE token_hash = ? AND purpose = ?`,
+    )
+    .get(tokenHash, purpose) as unknown as EmailTokenRow | undefined;
+  if (!row) return null;
+
+  db.prepare(`DELETE FROM email_tokens WHERE token_hash = ?`).run(tokenHash);
+  if (row.expires_at <= Date.now()) return null;
+  return row;
+}
+
+export function purgeExpiredEmailTokens(): void {
+  getDb().prepare(`DELETE FROM email_tokens WHERE expires_at <= ?`).run(Date.now());
 }
 
 /* ------------------------------------------------------------------ */

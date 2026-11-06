@@ -44,7 +44,8 @@ export default async function RegisterPage({
           Daftar gratis
         </h1>
         <p className="mt-1.5 text-[13px] leading-relaxed text-text-2">
-          Cukup nama, email, dan kata sandi. Tidak ada verifikasi email atau kartu kredit.
+          Cukup nama, email, dan kata sandi — tanpa kartu kredit. Kami mengirim satu
+          email berisi tautan verifikasi; Anda tetap bisa langsung menonton.
         </p>
 
         <form action={registerAction} className="sticker mt-6 space-y-4 p-5">
@@ -123,8 +124,8 @@ export default async function RegisterPage({
         </form>
 
         <p className="mt-4 px-1 text-center text-[11.5px] leading-relaxed text-text-3">
-          Kata sandi disimpan sebagai hash scrypt. Kami tidak mengirim email dan tidak
-          meminta data pembayaran di tahap ini.
+          Kata sandi disimpan sebagai hash scrypt. Email hanya dipakai untuk verifikasi
+          akun dan reset kata sandi — tidak untuk promosi.
         </p>
       </div>
     </div>

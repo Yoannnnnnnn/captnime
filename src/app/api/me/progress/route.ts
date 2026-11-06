@@ -7,6 +7,16 @@ export const dynamic = "force-dynamic";
 const unauthorised = () =>
   NextResponse.json({ error: "Belum masuk" }, { status: 401 });
 
+/** Riwayat tontonan baru disinkronkan setelah email terverifikasi. */
+const unverified = () =>
+  NextResponse.json(
+    {
+      error: "verifikasi",
+      message: "Verifikasi email dulu agar riwayat tontonan tersinkron antar perangkat.",
+    },
+    { status: 403 },
+  );
+
 const toInt = (value: unknown, fallback = 0) => {
   const n = Number(value);
   return Number.isFinite(n) ? Math.trunc(n) : fallback;
@@ -15,6 +25,7 @@ const toInt = (value: unknown, fallback = 0) => {
 export async function PUT(request: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return unauthorised();
+  if (!user.emailVerified) return unverified();
 
   let body: Record<string, unknown>;
   try {
@@ -40,6 +51,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return unauthorised();
+  if (!user.emailVerified) return unverified();
 
   if (request.nextUrl.searchParams.get("all") === "1") {
     clearProgress(user.id);

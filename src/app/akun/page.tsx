@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bookmark, Clock3, KeyRound, LogOut, ShieldCheck } from "lucide-react";
+import { Bookmark, Clock3, KeyRound, LogOut, MailCheck, MailWarning, ShieldCheck } from "lucide-react";
 import { cookies } from "next/headers";
 import {
   changePasswordAction,
@@ -9,6 +9,7 @@ import {
   dismissRecoveryCodeAction,
   logoutAction,
   logoutOthersAction,
+  resendVerificationAction,
 } from "@/app/auth-actions";
 import { requireUser } from "@/lib/auth-user";
 import {
@@ -44,6 +45,23 @@ const NOTICES: Record<string, { tone: "ok" | "error"; text: string }> = {
   "error=sandi-beda": { tone: "error", text: "Konfirmasi kata sandi tidak cocok." },
   "error=hapus-sandi": { tone: "error", text: "Kata sandi salah — akun tidak dihapus." },
   "error=hapus-teks": { tone: "error", text: "Ketik HAPUS (huruf besar) untuk konfirmasi." },
+  "verifikasi=dikirim": {
+    tone: "ok",
+    text: "Tautan verifikasi sudah dikirim. Berlaku 24 jam — periksa juga folder spam.",
+  },
+  "verifikasi=berhasil": {
+    tone: "ok",
+    text: "Email berhasil diverifikasi. Sinkronisasi antar perangkat sekarang aktif.",
+  },
+  "verifikasi=sudah": { tone: "ok", text: "Email Anda memang sudah terverifikasi." },
+  "verifikasi=gagal": {
+    tone: "error",
+    text: "Email verifikasi gagal dikirim. Coba lagi beberapa saat lagi.",
+  },
+  "verifikasi=batas": {
+    tone: "error",
+    text: "Terlalu sering meminta tautan verifikasi. Coba lagi dalam 15 menit.",
+  },
 };
 
 export default async function AccountPage({
@@ -95,6 +113,27 @@ export default async function AccountPage({
 
       {notice ? <div className="mb-4"><Notice tone={notice.tone}>{notice.text}</Notice></div> : null}
 
+      {user.emailVerified ? null : (
+        <div className="mb-4 rounded-xl border border-gold/35 bg-gold/10 p-4">
+          <p className="flex items-center gap-2 text-[12.5px] font-semibold text-gold">
+            <MailWarning className="size-4" aria-hidden />
+            Email belum diverifikasi
+          </p>
+          <p className="mt-1 text-[12px] leading-relaxed text-text-2">
+            Akun tetap bisa dipakai untuk menonton. Yang belum aktif hanya sinkronisasi
+            daftar tonton dan riwayat tontonan antar perangkat — datanya masih tersimpan
+            di peramban ini. Tautan verifikasi sudah kami kirim ke{" "}
+            <span className="text-text">{user.email}</span>.
+          </p>
+          <form action={resendVerificationAction} className="mt-3">
+            <button type="submit" className={btnGhost}>
+              <MailCheck className="size-3.5" aria-hidden />
+              Kirim ulang tautan verifikasi
+            </button>
+          </form>
+        </div>
+      )}
+
       <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr]">
         {/* --- profil --- */}
         <section className="sticker p-5">
@@ -117,9 +156,13 @@ export default async function AccountPage({
             </div>
             <div>
               <dt className="text-[10.5px] uppercase tracking-[0.14em] text-text-3">
-                Penyimpanan
+                Status email
               </dt>
-              <dd className="mt-0.5 text-text-2">Database akun</dd>
+              <dd
+                className={`mt-0.5 ${user.emailVerified ? "text-mint" : "text-gold"}`}
+              >
+                {user.emailVerified ? "Terverifikasi" : "Belum diverifikasi"}
+              </dd>
             </div>
           </dl>
 
@@ -293,8 +336,8 @@ export default async function AccountPage({
               Lupa kata sandi nanti?
             </h2>
             <p className="mt-0.5 text-[12px] leading-relaxed text-text-3">
-              Aplikasi ini belum memakai email transaksional, jadi reset memakai kode
-              pemulihan sekali pakai.
+              Reset utama lewat tautan email di halaman lupa kata sandi. Kode ini
+              menjadi jalan cadangan bila kotak masuk tidak bisa dibuka.
             </p>
             <div className="mt-3">
               {recoveryCode ? (

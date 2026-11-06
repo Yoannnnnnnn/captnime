@@ -43,8 +43,10 @@ Keluar  → hapus baris sesi → hapus cookie → /
 ## 3. Tabel
 
 ```sql
-users     (id, email UNIQUE, name, password_hash, recovery_hash, created_at)
-sessions  (token_hash PK, user_id FK, expires_at, created_at)
+users        (id, email UNIQUE, name, password_hash, recovery_hash,
+              email_verified_at, created_at)
+sessions     (token_hash PK, user_id FK, expires_at, created_at)
+email_tokens (token_hash PK, user_id FK, purpose, email, expires_at, created_at)
 progress  (user_id, anime_slug, episode_number, position, duration, updated_at)
 watchlist (user_id, anime_slug, added_at)
 ```
@@ -54,7 +56,11 @@ watchlist (user_id, anime_slug, added_at)
 - `sessions.expires_at` disimpan sebagai epoch milidetik agar perbandingan
   tidak bergantung pada zona waktu basis data.
 - Semua foreign key `ON DELETE CASCADE`; menghapus user menghapus sesi,
-  riwayat, dan daftar tontonnya.
+  riwayat, daftar tonton, dan token emailnya.
+- `users.email_verified_at` disimpan sebagai ISO string (bukan boolean) agar
+  kapan verifikasi terjadi tetap bisa diaudit; `NULL` berarti belum.
+- `email_tokens` menyimpan **hash** token, bukan tokennya. Satu baris per
+  pengguna+tujuan; membuat token baru menghapus yang lama.
 
 ---
 
@@ -93,9 +99,26 @@ Ini mencegah ratusan UPDATE per sesi menonton tanpa kehilangan progres.
 minimal 8 karakter dan harus sama dengan konfirmasi. Sesi di perangkat ini
 tetap aktif.
 
-### Kode pemulihan (pengganti email reset)
-Aplikasi ini belum memakai email transaksional, jadi lupa sandi diselesaikan
-dengan kode sekali pakai:
+### Verifikasi email & reset lewat email
+Sejak Fase 5, akun memakai email transaksional (Mailjet) untuk dua hal:
+verifikasi alamat email dan reset kata sandi. Detail penyiapan, templat, dan
+batasannya ada di **`docs/EMAIL.md`**. Ringkasnya:
+
+- **Daftar** → satu email verifikasi berisi tautan; pengguna tetap bisa masuk
+  dan menonton sebelum memverifikasi.
+- **Verifikasi** lewat tombol di `/verifikasi` (POST, bukan GET, agar pemindai
+  tautan di klien email tidak memverifikasi sendiri). Tautan berlaku 24 jam.
+- **Sinkronisasi server** (riwayat, daftar tonton, impor data peramban) baru
+  aktif setelah email terverifikasi; sebelum itu semuanya tetap tersimpan di
+  peramban seperti mode tamu.
+- **Lupa sandi** → `/lupa-sandi` mengirim tautan `/atur-ulang` (berlaku 60
+  menit, sekali pakai). Respons halaman selalu sama, terdaftar atau tidak.
+
+Bila variabel Mailjet kosong, fitur ini mati dengan sopan: pendaftaran tetap
+berhasil, dan `/lupa-sandi` memberi tahu bahwa pengiriman email belum aktif.
+
+### Kode pemulihan (cadangan bila email tak bisa dibuka)
+Selain tautan email, tersedia kode sekali pakai:
 
 1. Di `/akun`, tekan **Buat kode pemulihan** → kode tampil **satu kali**
    (format `CPT-XXXX-XXXX-XXXX`, tanpa huruf/angka yang mudah tertukar).
@@ -105,9 +128,10 @@ dengan kode sekali pakai:
    pengguna menekan “Sudah saya simpan”.
    *Catatan teknis: cookie dihapus dengan `path=/akun` yang sama seperti saat
    dibuat — bug pertama di fase ini justru karena path-nya tidak cocok.*
-3. Di `/lupa-sandi`, masukkan email + kode + sandi baru. Kode **dibuat sekali
-   pakai**: setelah berhasil, `recovery_hash` dikosongkan dan **semua sesi
-   lama dihapus**.
+3. Di `/lupa-sandi` (panel “Punya kode pemulihan?”), masukkan email + kode +
+   sandi baru. Kode **dibuat sekali pakai**: setelah berhasil, `recovery_hash`
+   dikosongkan dan **semua sesi lama dihapus**. Reset lewat email juga
+   mengosongkan `recovery_hash`.
 4. Salah kode dibatasi 6 percobaan per IP+email / 15 menit.
 
 Membuat kode baru otomatis membatalkan kode lama.
@@ -149,19 +173,22 @@ soft delete: data benar-benar hilang.
 
 ## 7. Batasan yang belum dikerjakan
 
-1. **Belum ada verifikasi email** — siapa pun bisa mendaftar dengan email orang
-   lain, dan pemulihan bergantung pada kode yang disimpan pengguna sendiri.
-2. **Belum ada reset lewat email** (butuh SMTP/Resend).
-3. **Belum ada login sosial (OAuth)** atau 2FA.
-4. **Belum ada peran**: panel admin masih memakai kata sandi lingkungan
+1. **Verifikasi email belum memblokir apa pun selain sinkronisasi.** Selama
+   seseorang belum memverifikasi, alamat email itu tetap “dipesan” di kolom
+   `email` yang unik — jadi pemilik aslinya tidak bisa memakainya untuk
+   mendaftar sampai baris lama dibersihkan. Ini konsekuensi wajar dari
+   kebijakan lunak, tetapi perlu penanganan (mis. email pembatalan
+   kepemilikan) sebelum dibuka luas.
+2. **Belum ada ganti alamat email** di `/akun`, karena itu belum ada alur
+   verifikasi ulang alamat baru.
+3. **Belum ada webhook bounce/complaint** dari Mailjet.
+4. **Belum ada login sosial (OAuth)** atau 2FA.
+5. **Belum ada peran**: panel admin masih memakai kata sandi lingkungan
    terpisah, bukan akun pengguna.
-5. **Watchlist belum dibatasi** jumlahnya; riwayat dibatasi 60 judul terakhir.
-6. **Belum ada halaman riwayat sesi** (daftar perangkat yang aktif).
-
-Butir 1–2 adalah prasyarat sebelum aplikasi dibuka untuk publik: tanpa
-verifikasi email, siapa pun bisa memakai alamat email orang lain, dan tanpa
-email reset, pengguna yang kehilangan kode pemulihan tidak punya jalan pulih
-selain menghubungi operator.
+6. **Watchlist belum dibatasi** jumlahnya; riwayat dibatasi 60 judul terakhir.
+7. **Belum ada halaman riwayat sesi** (daftar perangkat yang aktif).
+8. **Batas percobaan di memori proses** — hilang saat restart, tidak dibagi
+   antar instans.
 
 ---
 
@@ -183,10 +210,13 @@ curl -i -c /tmp/c.txt -X POST http://localhost:3000/daftar ...   # lewat peramba
 # cek sesi
 curl -s -b /tmp/c.txt http://localhost:3000/api/me
 
-# simpan progres
+# simpan progres (403 sampai email diverifikasi)
 curl -s -b /tmp/c.txt -X PUT http://localhost:3000/api/me/progress \
   -H 'Content-Type: application/json' \
   -d '{"slug":"langit-kedua","episode":3,"position":300,"duration":1440}'
 ```
+
+Alur email (verifikasi + reset) diuji dengan server tiruan Mailjet; lihat
+`docs/EMAIL.md` §7.
 
 Lihat juga `docs/DATABASE.md` untuk lokasi file database dan cara backup.
