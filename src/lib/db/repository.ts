@@ -263,6 +263,7 @@ export interface AdminAnime {
   anime: Anime;
   episodeRows: AdminEpisodeRow[];
   published: boolean;
+  anilistId: number | null;
 }
 
 export interface AdminListItem {
@@ -320,8 +321,8 @@ export function getAdminAnime(slug: string): AdminAnime | null {
 
   const db = getDb();
   const meta = db
-    .prepare(`SELECT published FROM anime WHERE slug = ?`)
-    .get(slug) as { published: number } | undefined;
+    .prepare(`SELECT published, anilist_id FROM anime WHERE slug = ?`)
+    .get(slug) as { published: number; anilist_id: number | null } | undefined;
   const rows = db
     .prepare(
       `SELECT * FROM episodes WHERE anime_id = ? ORDER BY number ASC`,
@@ -376,7 +377,12 @@ export function getAdminAnime(slug: string): AdminAnime | null {
       })),
   }));
 
-  return { anime, episodeRows, published: meta?.published === 1 };
+  return {
+    anime,
+    episodeRows,
+    published: meta?.published === 1,
+    anilistId: meta?.anilist_id ?? null,
+  };
 }
 
 export function animeExists(slug: string): boolean {
@@ -454,6 +460,8 @@ export interface AnimeWriteInput {
   relatedSlugs: string[];
   genres: string[];
   published: boolean;
+  /** ID AniList bila judul diimpor dari metadata; null untuk judul manual. */
+  anilistId?: number;
 }
 
 const slugIsValid = (slug: string) => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
@@ -500,8 +508,8 @@ export function createOrUpdateAnime(input: AnimeWriteInput): string {
          id, slug, title, title_alt, tagline, synopsis, type, status, year, season,
          studio, score, rating, total_episodes, duration_minutes, broadcast_day,
          broadcast_time, palette_from, palette_to, motif, poster, banner, featured,
-         published, tags, related_slugs, created_at, updated_at
-       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+         published, tags, related_slugs, anilist_id, created_at, updated_at
+       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
        ON CONFLICT(slug) DO UPDATE SET
          title = excluded.title,
          title_alt = excluded.title_alt,
@@ -527,6 +535,7 @@ export function createOrUpdateAnime(input: AnimeWriteInput): string {
          published = excluded.published,
          tags = excluded.tags,
          related_slugs = excluded.related_slugs,
+         anilist_id = COALESCE(excluded.anilist_id, anime.anilist_id),
          updated_at = excluded.updated_at`,
     ).run(
       id,
@@ -555,6 +564,7 @@ export function createOrUpdateAnime(input: AnimeWriteInput): string {
       input.published ? 1 : 0,
       joinCsv(input.tags),
       joinCsv(input.relatedSlugs),
+      input.anilistId ?? null,
       now,
       now,
     );
@@ -569,6 +579,20 @@ export function createOrUpdateAnime(input: AnimeWriteInput): string {
 
     return id;
   });
+}
+
+/** Perbarui hanya jadwal tayang (dipakai sinkronisasi metadata). */
+export function updateBroadcast(
+  slug: string,
+  day: string | null,
+  time: string | null,
+): void {
+  getDb()
+    .prepare(
+      `UPDATE anime SET broadcast_day = ?, broadcast_time = ?, updated_at = ?
+        WHERE slug = ?`,
+    )
+    .run(day, time, new Date().toISOString(), slug);
 }
 
 export function deleteAnime(slug: string): void {

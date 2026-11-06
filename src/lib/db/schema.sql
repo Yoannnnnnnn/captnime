@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS anime (
   published         INTEGER NOT NULL DEFAULT 1,
   tags              TEXT NOT NULL DEFAULT '',
   related_slugs     TEXT NOT NULL DEFAULT '',
+  anilist_id        INTEGER,
   created_at        TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at        TEXT NOT NULL DEFAULT (datetime('now'))
 );

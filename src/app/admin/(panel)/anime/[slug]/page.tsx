@@ -3,10 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { getAdminAnime, getAllGenres } from "@/lib/db/repository";
-import { deleteAnimeAction } from "@/app/admin/actions";
+import { deleteAnimeAction, syncScheduleAction } from "@/app/admin/actions";
 import { AnimeForm } from "@/components/admin/anime-form";
 import { EpisodeManager } from "@/components/admin/episode-manager";
-import { Panel, btnDanger, btnGhost } from "@/components/admin/ui";
+import { Badge, Notice, Panel, btnDanger, btnGhost } from "@/components/admin/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +33,10 @@ export default async function AdminAnimePage({
   if (!record) notFound();
 
   const genres = getAllGenres();
-  const saved = (Array.isArray(sp.saved) ? sp.saved[0] : sp.saved) === "1";
+  const flag = (key: string) => (Array.isArray(sp[key]) ? sp[key][0] : sp[key]);
+  const saved = flag("saved") === "1";
+  const synced = flag("synced") === "1";
+  const syncError = flag("error");
 
   return (
     <div className="space-y-5">
@@ -47,6 +50,59 @@ export default async function AdminAnimePage({
         </Link>
         <span className="font-mono text-[11px] text-text-3">/anime/{record.anime.slug}</span>
       </div>
+
+      {synced ? <Notice tone="ok">Jadwal tayang diperbarui dari AniList.</Notice> : null}
+      {syncError === "sync" ? (
+        <Notice tone="error">
+          Gagal mengambil jadwal dari AniList. Periksa koneksi server atau coba lagi nanti.
+        </Notice>
+      ) : null}
+      {syncError === "jadwal" ? (
+        <Notice tone="error">
+          AniList tidak memberi jadwal tayang untuk judul ini (biasanya karena sudah
+          tamat atau belum diumumkan).
+        </Notice>
+      ) : null}
+
+      <Panel
+        index="00"
+        title="Jadwal tayang"
+        description="Dipakai halaman /schedule. Bisa diisi manual di formulir di bawah, atau disinkronkan dari AniList."
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          {record.anime.broadcastDay ? (
+            <Badge tone="mint">
+              {record.anime.broadcastDay} · {record.anime.broadcastTime ?? "—"}
+            </Badge>
+          ) : (
+            <Badge tone="coral">Belum ada jadwal</Badge>
+          )}
+
+          {record.anilistId ? (
+            <form action={syncScheduleAction}>
+              <input type="hidden" name="slug" value={record.anime.slug} />
+              <input type="hidden" name="anilistId" value={record.anilistId} />
+              <button type="submit" className={btnGhost}>
+                Sinkronkan dari AniList
+              </button>
+            </form>
+          ) : (
+            <p className="text-[12px] text-text-3">
+              Judul ini belum tertaut ke AniList. Impor ulang lewat{" "}
+              <a href="/admin/impor" className="text-text-2 underline underline-offset-4">
+                Impor metadata
+              </a>{" "}
+              agar jadwal bisa disinkronkan otomatis.
+            </p>
+          )}
+
+          {record.anilistId ? (
+            <span className="font-mono text-[11px] text-text-3">
+              AniList #{record.anilistId}
+            </span>
+          ) : null}
+        </div>
+      </Panel>
 
       <AnimeForm
         anime={record.anime}

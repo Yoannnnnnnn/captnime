@@ -71,8 +71,9 @@ anime ──┬── anime_genres ── genres
                        └── subtitles
 ```
 
-- `anime` — metadata judul, palet poster, `featured`, dan `published` (kontrol
-  tampil / soft delete). `slug` unik dan menjadi URL publik.
+- `anime` — metadata judul, palet poster, `featured`, `published` (kontrol
+  tampil / soft delete), dan `anilist_id` (sumber metadata, dipakai untuk
+  sinkronisasi jadwal tayang). `slug` unik dan menjadi URL publik.
 - `genres` + `anime_genres` — relasi banyak-ke-banyak; genre baru dibuat otomatis
   saat disimpan dari panel.
 - `episodes` — unik per (`anime_id`, `number`); menyimpan nomor sama akan
@@ -83,6 +84,11 @@ anime ──┬── anime_genres ── genres
 Kolom daftar sederhana (`tags`, `related_slugs`) disimpan sebagai CSV. Ini
 pilihan pragmatis untuk satu tabel kecil; bila butuh pencarian per tag,
 normalisasi jadi tabel relasi seperti `anime_genres`.
+
+**Migrasi aditif.** `CREATE TABLE IF NOT EXISTS` tidak menambah kolom ke tabel
+yang sudah ada, jadi `client.ts` memeriksa `PRAGMA table_info(anime)` dan
+menjalankan `ALTER TABLE … ADD COLUMN` saat kolom baru belum ada (contoh:
+`anilist_id`). Tidak perlu reset atau membuang database lama.
 
 Semua foreign key memakai `ON DELETE CASCADE`, jadi menghapus judul otomatis
 membersihkan episode, server, dan subtitle-nya.

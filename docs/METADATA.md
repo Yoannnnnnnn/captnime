@@ -13,8 +13,9 @@ judul — **bukan video**.
 | Judul utama + alternatif | Tautan stream |
 | Sinopsis (HTML dibersihkan) | Episode |
 | Genre | Subtitle |
-| Tahun & musim | Jadwal tayang |
-| Studio utama | Hubungan antar judul |
+| Tahun & musim | Hubungan antar judul |
+| **Jadwal tayang berikutnya** (`nextAiringEpisode`, dikonversi ke WIB) | — |
+| Studio utama | — |
 | Skor rata-rata & rating umur | — |
 | Jumlah episode, durasi | — |
 | Poster, banner, warna poster | — |
@@ -38,7 +39,29 @@ di situs sampai Anda melengkapi episode + sumber video lalu mencentang
 
 ---
 
-## 3. Pemetaan data
+## 3. Jadwal tayang otomatis
+
+AniList menyertakan `nextAiringEpisode { airingAt episode }`. Nilainya dipakai
+untuk mengisi `broadcast_day` dan `broadcast_time` supaya judul hasil impor
+langsung muncul di `/schedule`.
+
+- `airingAt` adalah UTC (detik). Konversi memakai **WIB (UTC+7, tanpa DST)**:
+  `Sabtu 13:00 UTC` → **Sabtu 20:00 WIB**, `Sabtu 20:30 UTC` → **Minggu 03:30 WIB**.
+- Bila judul sudah tamat atau jadwal belum diumumkan, AniList tidak mengirim
+  `nextAiringEpisode`; jadwal dibiarkan kosong dan bisa diisi manual.
+- Editor judul menampilkan **jadwal aktif + ID AniList**, plus tombol
+  **Sinkronkan dari AniList** untuk memperbarui saat jadwal berubah.
+- ID AniList disimpan di kolom `anime.anilist_id`. Database lama otomatis
+  mendapat kolom ini lewat migrasi ringan di `src/lib/db/client.ts`
+  (`PRAGMA table_info` → `ALTER TABLE`), jadi tidak perlu reset database.
+
+Halaman `/schedule` sendiri tetap hanya menampilkan judul berstatus
+**ongoing** dan **sudah terbit**. Draf impor sengaja tidak muncul sampai Anda
+melengkapi episode dan mencentang “Terbitkan di situs”.
+
+---
+
+## 4. Pemetaan data
 
 | AniList | Captnime |
 | --- | --- |
@@ -56,6 +79,8 @@ di situs sampai Anda melengkapi episode + sumber video lalu mencentang
 | `bannerImage` | `banner` |
 | `studios(isMain: true).nodes[0]` | `studio` |
 | `genres[]` | `genres` (maks 6, genre baru dibuat otomatis) |
+| `nextAiringEpisode.airingAt` → WIB | `broadcastDay`, `broadcastTime` |
+| `id` | `anilist_id` (dipakai untuk sinkronisasi jadwal) |
 
 Nama genre dari AniList berbahasa Inggris (`Action`, `Fantasy`). Bila katalog
 Anda memakai nama Indonesia (`Aksi`, `Fantasi`), impor menghasilkan dua ejaan
@@ -64,7 +89,7 @@ menerjemahkan otomatis dan salah. Rapikan di editor bila perlu.
 
 ---
 
-## 4. Konfigurasi
+## 5. Konfigurasi
 
 ```bash
 # default: https://graphql.anilist.co
@@ -88,7 +113,7 @@ Batasan yang perlu diingat:
 
 ---
 
-## 5. Atribusi & ketentuan
+## 6. Atribusi & ketentuan
 
 Metadata berasal dari AniList dan ditampilkan dengan atribusi di halaman impor.
 API AniList bersifat publik, tetapi tetap milik mereka — jangan menyalahgunakan
@@ -99,7 +124,7 @@ metadata tidak mengubah kewajiban lisensi video — lihat `SUMBER-KONTEN.md`.
 
 ---
 
-## 6. Kalau ingin sumber metadata lain
+## 7. Kalau ingin sumber metadata lain
 
 `src/lib/metadata/anilist.ts` hanya berisi tiga hal: query GraphQL, fungsi
 pemetaan `toDraft()`, dan dua fungsi publik (`searchAnime`, `getAnimeById`).

@@ -59,6 +59,22 @@ export function dbLocation(): string {
   return path.join(dir, "captnime.db");
 }
 
+/**
+ * Migrasi kolom yang ditambahkan setelah database pertama kali dibuat.
+ * `CREATE TABLE IF NOT EXISTS` tidak menambah kolom ke tabel lama, jadi
+ * perubahan skema aditif perlu ditangani di sini.
+ */
+function migrate(db: DatabaseSync): void {
+  const columns = db.prepare("PRAGMA table_info(anime)").all() as unknown as Array<{
+    name: string;
+  }>;
+  const has = (name: string) => columns.some((column) => column.name === name);
+
+  if (!has("anilist_id")) {
+    db.exec("ALTER TABLE anime ADD COLUMN anilist_id INTEGER");
+  }
+}
+
 export function getDb(): DatabaseSync {
   if (globalThis.__captnimeDb) return globalThis.__captnimeDb;
 
@@ -70,6 +86,7 @@ export function getDb(): DatabaseSync {
   db.exec("PRAGMA foreign_keys = ON;");
   db.exec("PRAGMA busy_timeout = 5000;");
   db.exec(readSchema());
+  migrate(db);
 
   globalThis.__captnimeDb = db;
   return db;

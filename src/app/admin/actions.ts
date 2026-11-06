@@ -13,6 +13,7 @@ import {
   deleteSubtitle,
   saveEpisode,
   uniqueSlug,
+  updateBroadcast,
   validateSlug,
 } from "@/lib/db/repository";
 import { getAnimeById } from "@/lib/metadata/anilist";
@@ -191,6 +192,9 @@ export async function importAnimeAction(formData: FormData) {
     motif: draft.motif,
     poster: draft.poster,
     banner: draft.banner,
+    broadcastDay: draft.broadcastDay,
+    broadcastTime: draft.broadcastTime,
+    anilistId: draft.anilistId,
     featured: false,
     tags: ["Impor AniList", draft.sourceUrl ? `Sumber: ${draft.sourceUrl}` : ""].filter(Boolean),
     relatedSlugs: [],
@@ -201,6 +205,32 @@ export async function importAnimeAction(formData: FormData) {
 
   refresh(slug);
   redirect(`/admin/anime/${slug}?saved=1`);
+}
+
+/**
+ * Sinkronkan jadwal tayang satu judul dari AniList.
+ * Berguna setelah jadwal berubah atau saat judul diimpor sebelum jadwalnya ada.
+ */
+export async function syncScheduleAction(formData: FormData) {
+  await requireAdmin();
+
+  const slug = str(formData, "slug");
+  const id = num(formData, "anilistId", 0);
+  if (!slug || !id) redirect("/admin?error=sync");
+
+  const result = await getAnimeById(id);
+  if (!result.ok || !result.data) {
+    redirect(`/admin/anime/${slug}?error=sync`);
+  }
+
+  const { broadcastDay, broadcastTime } = result.data;
+  if (!broadcastDay || !broadcastTime) {
+    redirect(`/admin/anime/${slug}?error=jadwal`);
+  }
+
+  updateBroadcast(slug, broadcastDay, broadcastTime);
+  refresh(slug);
+  redirect(`/admin/anime/${slug}?synced=1`);
 }
 
 /* ------------------------------------------------------------------ */

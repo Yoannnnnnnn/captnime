@@ -158,7 +158,8 @@ npm run build && npm start
 ### Impor metadata
 
 `/admin/impor` mencari judul di **AniList** (GraphQL publik) lalu membuat draf
-berisi judul, sinopsis, genre, tahun, musim, studio, skor, poster, dan banner.
+berisi judul, sinopsis, genre, tahun, musim, studio, skor, poster, banner, dan
+**jadwal tayang berikutnya** (dikonversi ke WIB, langsung muncul di `/schedule`).
 Draf **tidak terbit** sampai episode + sumber video dilengkapi dan Anda
 mencentang “Terbitkan di situs”.
 
@@ -166,6 +167,8 @@ mencentang “Terbitkan di situs”.
 - Slug otomatis unik (`judul`, `judul-2`, …).
 - Batas ±90 permintaan/menit AniList dihormati: 12 hasil per pencarian.
 - Endpoint bisa dialihkan lewat `CAPTNIME_ANILIST_ENDPOINT` (proxy/mock).
+- Jalur impor **tidak** memakai kuota saat halaman dibuka tanpa kata kunci.
+- Di editor judul ada tombol **Sinkronkan dari AniList** untuk memperbarui jadwal.
 
 Rincian pemetaan field: [`docs/METADATA.md`](docs/METADATA.md).
 Rincian skema, backup, deployment, dan migrasi: [`docs/DATABASE.md`](docs/DATABASE.md).

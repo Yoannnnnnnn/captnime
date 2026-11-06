@@ -40,6 +40,7 @@ const MEDIA_FIELDS = `
   siteUrl
   coverImage { extraLarge large color }
   bannerImage
+  nextAiringEpisode { airingAt episode }
   studios(isMain: true) { nodes { name } }
 `;
 
@@ -80,6 +81,7 @@ export interface AniListMedia {
   coverImage?: { extraLarge?: string; large?: string; color?: string };
   bannerImage?: string;
   studios?: { nodes?: Array<{ name?: string }> };
+  nextAiringEpisode?: { airingAt: number; episode: number } | null;
 }
 
 /** Judul yang siap dipakai panel admin + pratinjau. */
@@ -103,6 +105,10 @@ export interface MetadataDraft {
   poster?: string;
   banner?: string;
   sourceUrl?: string;
+  /** Jadwal tayang berikutnya dalam WIB, bila AniList memberikannya. */
+  broadcastDay?: DayName;
+  broadcastTime?: string;
+  nextEpisode?: number;
 }
 
 export interface MetadataResult<T> {
@@ -202,6 +208,28 @@ const GENRE_MOTIF: Record<string, string> = {
   Thriller: "⌁",
 };
 
+const HARI: DayName[] = [
+  "Minggu",
+  "Senin",
+  "Selasa",
+  "Rabu",
+  "Kamis",
+  "Jumat",
+  "Sabtu",
+];
+
+/**
+ * AniList memberi `airingAt` dalam UTC (detik). Jadwal ditampilkan dalam WIB
+ * (UTC+7, tanpa DST) karena mayoritas pengguna berada di Indonesia.
+ */
+export function wibSchedule(airingAt: number): { day: DayName; time: string } {
+  const shifted = new Date((airingAt + 7 * 3600) * 1000);
+  const day = HARI[shifted.getUTCDay()] ?? "Sabtu";
+  const hh = String(shifted.getUTCHours()).padStart(2, "0");
+  const mm = String(shifted.getUTCMinutes()).padStart(2, "0");
+  return { day, time: `${hh}:${mm} WIB` };
+}
+
 export function toDraft(media: AniListMedia): MetadataDraft {
   // Romaji dipakai sebagai judul utama: itu bentuk yang paling dikenal di
   // katalog anime (termasuk penonton Indonesia). Judul Inggris menyusul.
@@ -222,6 +250,9 @@ export function toDraft(media: AniListMedia): MetadataDraft {
 
   const genres = (media.genres ?? []).slice(0, 6);
   const motif = genres.map((g) => GENRE_MOTIF[g]).find(Boolean) ?? "✧";
+
+  const next = media.nextAiringEpisode;
+  const schedule = next?.airingAt ? wibSchedule(next.airingAt) : null;
 
   return {
     anilistId: media.id,
@@ -245,6 +276,9 @@ export function toDraft(media: AniListMedia): MetadataDraft {
     poster: media.coverImage?.extraLarge ?? media.coverImage?.large,
     banner: media.bannerImage,
     sourceUrl: media.siteUrl,
+    broadcastDay: schedule?.day,
+    broadcastTime: schedule?.time,
+    nextEpisode: next?.episode,
   };
 }
 
