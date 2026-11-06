@@ -49,8 +49,18 @@ CAPTNIME_MAILJET_ENDPOINT=http://127.0.0.1:4011/v3.1/send
 CAPTNIME_MAIL_SANDBOX=1
 ```
 
-Bila `MJ_APIKEY_PUBLIC`, `MJ_APIKEY_PRIVATE`, atau `CAPTNIME_MAIL_FROM` kosong,
-fitur email dianggap **mati dengan sopan**:
+**Nilai placeholder ditolak.** `.env.example` berisi `MJ_APIKEY_PUBLIC=xxxx…`,
+dan `xxxx` lolos pemeriksaan "ada isinya". Karena itu `emailConfigStatus()`
+menolak nilai yang berbentuk contoh (mengandung `xxxx`, berawalan `ganti-`,
+`contoh`, `changeme`, atau `alamat-yang-sudah-divalidasi@…`), serta memeriksa
+bentuk alamat pengirim. Tanpa penjagaan ini, salah tempel muncul sebagai
+"email gagal dikirim" (Mailjet menolak `401`) alih-alih "email belum aktif" —
+pesan yang menyesatkan saat menyiapkan server. Ini pengalaman nyata dari
+pengujian pertama.
+
+Bila `MJ_APIKEY_PUBLIC`, `MJ_APIKEY_PRIVATE`, atau `CAPTNIME_MAIL_FROM` kosong
+**atau masih placeholder**, fitur email dianggap **mati dengan sopan**
+(alasannya dicetak di log server dan dijelaskan di halaman `/akun`):
 
 - pendaftaran tetap berhasil dan pengguna tetap bisa menonton;
 - `/lupa-sandi` menampilkan pesan bahwa pengiriman email belum aktif dan
@@ -213,10 +223,28 @@ Server tiruan ikut memvalidasi hal yang akan ditolak Mailjet sungguhan:
 Basic auth wajib benar, `From.Email`, `To`, `Subject`, dan `TextPart`/
 `HTMLPart` harus ada, maksimal 50 pesan per panggilan.
 
+### Periksa kredensial tanpa aplikasi
+
+```bash
+npm run cek-email -- --dry     # baca & periksa konfigurasi saja
+npm run cek-email              # kirim satu email uji ke CAPTNIME_MAIL_FROM
+npm run cek-email -- --to=anda@contoh.com
+```
+
+Skrip ini menyamarkan kunci, menjelaskan masalah yang ditemukan, dan memberi
+petunjuk untuk `401`/`400`. Kalau skrip berhasil, masalahnya bukan di
+kredensial — melainkan di konfigurasi aplikasi.
+
 ### Kirim sungguhan
 
-Ini **tidak bisa** dibuktikan dari sandbox — harus Anda jalankan sekali dengan
-kredensial asli:
+Ini **tidak bisa** dibuktikan dari sandbox — harus dijalankan dengan kredensial
+asli. **Status: sudah diverifikasi operator** (2026-11-06) dengan sender Gmail
+yang divalidasi: email verifikasi diterima, tombol `/verifikasi` berfungsi, dan
+reset lewat email menyelesaikan alurnya. Catatan dari percobaan itu: alamat
+pengirim yang salah ketik di `.env.local` membuat Mailjet membuat entri sender
+berstatus *pending*, dan pengiriman ditolak `400` sampai alamat yang benar
+dipakai — sekarang kasus itu tertangkap lebih awal oleh penjagaan placeholder
+dan `npm run cek-email`. Langkahnya:
 
 ```bash
 CAPTNIME_MAIL_SANDBOX=1 npm start     # validasi payload tanpa benar-benar mengirim

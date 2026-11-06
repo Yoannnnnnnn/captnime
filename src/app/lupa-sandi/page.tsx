@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { KeyRound, MailCheck, ShieldAlert } from "lucide-react";
 import { requestResetAction, resetPasswordAction } from "@/app/auth-actions";
+import { emailConfigHint, emailConfigStatus } from "@/lib/email";
 import { btnGhost, btnPrimary, inputClass, labelClass } from "@/components/admin/ui";
 
 export const metadata: Metadata = {
@@ -34,6 +35,7 @@ export default async function ForgotPasswordPage({
   const error = one("error");
   const email = one("email") ?? "";
   const sent = one("terkirim") === "1";
+  const emailStatus = emailConfigStatus();
 
   return (
     <div className="container-page flex min-h-[80dvh] items-center justify-center py-12 pt-24 lg:pt-12">
@@ -79,7 +81,17 @@ export default async function ForgotPasswordPage({
               className="flex items-start gap-2 rounded-md border border-coral/40 bg-coral/10 px-3 py-2 text-[12.5px] leading-relaxed text-coral"
             >
               <ShieldAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
-              {ERRORS[error]}
+              <span>
+                {ERRORS[error]}
+                {error === "email-off" && !emailStatus.ok ? (
+                  <>
+                    {" "}
+                    <span className="text-text-2">
+                      {emailConfigHint(emailStatus.problem)}
+                    </span>
+                  </>
+                ) : null}
+              </span>
             </p>
           ) : null}
 

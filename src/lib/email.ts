@@ -33,17 +33,66 @@ export interface EmailMessage {
 
 export interface EmailResult {
   ok: boolean;
-  /** True bila email tidak dicoba kirim karena kredensial belum diisi. */
+  /** True bila email tidak dicoba kirim karena konfigurasi belum siap. */
   skipped?: boolean;
   error?: string;
 }
 
+/**
+ * Kenapa konfigurasi email belum bisa dipakai:
+ *   kosong  — salah satu variabel belum diisi
+ *   contoh  — nilainya masih placeholder dari .env.example (mis. "xxxx")
+ *   format  — CAPTNIME_MAIL_FROM bukan alamat email yang sah
+ */
+export type EmailConfigProblem = "kosong" | "contoh" | "format";
+
+export type EmailConfigStatus = { ok: true } | { ok: false; problem: EmailConfigProblem };
+
+const PLACEHOLDER_PREFIX = /^(changeme|ganti|isi|contoh|example|your|placeholder)/i;
+const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+function looksLikePlaceholder(value: string): boolean {
+  const v = value.trim().toLowerCase();
+  if (!v) return false;
+  if (/x{4,}/.test(v)) return true; // "xxxxxxxx" dari .env.example
+  if (PLACEHOLDER_PREFIX.test(v)) return true; // "ganti-dengan-...", "contoh@..."
+  if (v.startsWith("alamat-")) return true; // "alamat-yang-sudah-divalidasi@..."
+  return false;
+}
+
+/**
+ * Nilai placeholder dianggap BELUM dikonfigurasi.
+ *
+ * Alasannya konkret: `.env.example` berisi `MJ_APIKEY_PUBLIC=xxxx…`, dan `xxxx`
+ * lolos pemeriksaan "ada isinya". Tanpa penjagaan ini, salah tempel berubah
+ * menjadi "email gagal dikirim" (Mailjet menolak 401) alih-alih "email belum
+ * diaktifkan" — pesan yang menyesatkan saat menyiapkan server.
+ */
+export function emailConfigStatus(): EmailConfigStatus {
+  const key = process.env.MJ_APIKEY_PUBLIC?.trim() ?? "";
+  const secret = process.env.MJ_APIKEY_PRIVATE?.trim() ?? "";
+  const from = process.env.CAPTNIME_MAIL_FROM?.trim() ?? "";
+
+  if (!key || !secret || !from) return { ok: false, problem: "kosong" };
+  if ([key, secret, from].some(looksLikePlaceholder)) return { ok: false, problem: "contoh" };
+  if (!EMAIL_SHAPE.test(from)) return { ok: false, problem: "format" };
+  return { ok: true };
+}
+
 export function isEmailConfigured(): boolean {
-  return Boolean(
-    process.env.MJ_APIKEY_PUBLIC?.trim() &&
-      process.env.MJ_APIKEY_PRIVATE?.trim() &&
-      process.env.CAPTNIME_MAIL_FROM?.trim(),
-  );
+  return emailConfigStatus().ok;
+}
+
+/** Kalimat siap tampil untuk menjelaskan kenapa email belum aktif. */
+export function emailConfigHint(problem: EmailConfigProblem): string {
+  switch (problem) {
+    case "kosong":
+      return "MJ_APIKEY_PUBLIC, MJ_APIKEY_PRIVATE, dan CAPTNIME_MAIL_FROM belum diisi di .env.local.";
+    case "contoh":
+      return "Kredensial email masih berisi nilai contoh dari .env.example — ganti dengan API Key dan alamat pengirim asli dari Mailjet.";
+    case "format":
+      return "CAPTNIME_MAIL_FROM bukan alamat email yang sah, mis. halo@domain-anda.com.";
+  }
 }
 
 /** Alamat pengirim yang dipakai (sudah harus tervalidasi di akun Mailjet). */
@@ -86,9 +135,10 @@ export async function absoluteUrl(path: string): Promise<string> {
  * respons Mailjet bukan alasan menggagalkan pendaftaran pengguna.
  */
 export async function sendEmail(message: EmailMessage): Promise<EmailResult> {
-  if (!isEmailConfigured()) {
-    console.warn("[email] dilewati — MJ_APIKEY_PUBLIC/MJ_APIKEY_PRIVATE/CAPTNIME_MAIL_FROM belum diisi.");
-    return { ok: false, skipped: true, error: "belum-dikonfigurasi" };
+  const status = emailConfigStatus();
+  if (!status.ok) {
+    console.warn(`[email] dilewati — konfigurasi ${status.problem}. ${emailConfigHint(status.problem)}`);
+    return { ok: false, skipped: true, error: `belum-dikonfigurasi:${status.problem}` };
   }
 
   const endpoint = process.env.CAPTNIME_MAILJET_ENDPOINT?.trim() || DEFAULT_ENDPOINT;

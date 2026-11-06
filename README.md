@@ -4,34 +4,46 @@ Platform streaming anime — antarmuka cepat, katalog rapi, subtitle Indonesia, 
 lanjut-tonton otomatis. Dibangun dengan **Next.js 15 (App Router) + TypeScript +
 Tailwind CSS 4**.
 
-> **Status:** MVP fitur inti selesai, ditambah Fase 1 (CMS + basis data) dan
-> Fase 2 (akun pengguna). Katalog dikelola lewat `/admin` tanpa deploy ulang,
-> dan riwayat/daftar tonton tersimpan di akun — bukan cuma di satu perangkat.
-> Tamu tetap bisa menonton tanpa login.
+> **Status:** MVP fitur inti selesai, ditambah Fase 1 (CMS + basis data),
+> Fase 2 (akun pengguna), dan email transaksional (verifikasi akun + reset kata
+> sandi). Katalog dikelola lewat `/admin` tanpa deploy ulang, riwayat/daftar
+> tonton tersimpan di akun — bukan cuma di satu perangkat. Tamu tetap bisa
+> menonton tanpa login.
 
 ---
 
 ## 1. Menjalankan
 
+**Butuh Node.js 22.13 atau lebih baru** (aplikasi memakai modul bawaan
+`node:sqlite` yang belum ada di Node 20, dan `require()` modul ESM yang baru
+didukung sejak Node 22.12). Versi yang dipakai pengembangan ada di `.nvmrc`:
+
 ```bash
-npm install
+nvm use          # atau fnm use / asdf install
+npm ci           # memasang persis versi di package-lock.json
 npm run dev      # http://localhost:3000
-npm run build && npm start   # produksi
+```
+
+```bash
+npm run build && npm start   # produksi lokal
 npm run typecheck            # cek tipe
+npm run cek-email            # periksa kredensial Mailjet tanpa membuka aplikasi
 npm run clean                # buang cache .next & .next-build
 ```
 
-Host dan port bisa diatur lewat env (default `0.0.0.0:3000`):
+Skrip di atas **jalan di PowerShell, cmd, macOS, dan Linux** — tidak lagi
+memakai sintaks shell seperti `VAR=x command` atau `${PORT:-3000}`. Port
+diatur lewat env `PORT` (default `3000`) dan host lewat `HOST` (default
+`0.0.0.0`):
 
 ```bash
-HOST=127.0.0.1 PORT=3001 npm start   # hanya loopback
-HOST=::        PORT=3000 npm start   # dual-stack IPv4 + IPv6
+PORT=3001 npm start              # macOS/Linux
+$env:PORT=3001; npm start        # PowerShell
 ```
 
-`HOST=::` berguna di lingkungan container/preview yang mungkin menghubungi
-`localhost` lewat IPv6 (`::1`); pada kernel dengan `bindv6only=0` satu listener
-melayani kedua keluarga alamat. Untuk sebagian besar deployment,
-nilai default sudah cukup.
+> Panduan langkah demi langkah — termasuk memasang di Windows lewat VS Code,
+> menyiapkan Mailjet, dan daftar masalah yang sering muncul — ada di
+> [`docs/UJI-LOKAL.md`](docs/UJI-LOKAL.md).
 
 > **Catatan operasional:** pada lingkungan preview, buka aplikasi lewat panel
 > preview yang disediakan platform. Membuka URL preview secara manual di tab
@@ -213,6 +225,10 @@ CAPTNIME_APP_URL=https://domain-anda.com  # basis tautan di dalam email
 - Token disimpan sebagai SHA-256; tautan asli hanya ada di email.
 - Tanpa kredensial Mailjet, fitur ini mati dengan sopan dan kode pemulihan
   tetap bisa dipakai.
+
+Nilai placeholder seperti `xxxx` dari `.env.example` **sengaja ditolak** —
+kalau belum diganti, aplikasi melaporkan "email belum aktif", bukan "gagal
+dikirim". Periksa kredensial tanpa membuka aplikasi dengan `npm run cek-email`.
 
 Rincian: [`docs/EMAIL.md`](docs/EMAIL.md). Tabel, endpoint, keamanan, dan
 batasan akun: [`docs/AUTENTIKASI.md`](docs/AUTENTIKASI.md).

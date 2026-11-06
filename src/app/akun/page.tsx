@@ -12,7 +12,7 @@ import {
   resendVerificationAction,
 } from "@/app/auth-actions";
 import { requireUser } from "@/lib/auth-user";
-import { isEmailConfigured } from "@/lib/email";
+import { emailConfigHint, emailConfigStatus } from "@/lib/email";
 import {
   accountStats,
   listProgress,
@@ -81,7 +81,7 @@ export default async function AccountPage({
   };
 
   const user = await requireUser("/akun");
-  const emailConfigured = isEmailConfigured();
+  const emailStatus = emailConfigStatus();
   const recoveryCode = (await cookies()).get("captnime_recovery_code")?.value ?? null;
   const stats = accountStats(user.id);
   const [progress, watchlist] = [
@@ -129,16 +129,18 @@ export default async function AccountPage({
             Akun tetap bisa dipakai untuk menonton. Yang belum aktif hanya sinkronisasi
             daftar tonton dan riwayat tontonan antar perangkat — datanya masih tersimpan
             di peramban ini.{" "}
-            {emailConfigured ? (
+            {emailStatus.ok ? (
               <>
                 Tautan verifikasi dikirim ke{" "}
                 <span className="text-text">{user.email}</span>.
               </>
             ) : (
               <>
-                Pengiriman email belum diaktifkan di server ini, jadi tautan
-                verifikasi tidak bisa dikirim ke{" "}
-                <span className="text-text">{user.email}</span>.
+                Pengiriman email belum aktif di server ini, jadi tautan verifikasi
+                tidak bisa dikirim ke <span className="text-text">{user.email}</span>.{" "}
+                <span className="text-text-3">
+                  {emailConfigHint(emailStatus.problem)}
+                </span>
               </>
             )}
           </p>
