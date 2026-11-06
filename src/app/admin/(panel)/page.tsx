@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { ArrowUpRight, Plus } from "lucide-react";
+import { ArrowUpRight, Download, Plus } from "lucide-react";
 import { ensureSeeded } from "@/lib/db/seed";
 import { countRows, getAdminAnimeList } from "@/lib/db/repository";
 import { STATUS_LABEL } from "@/lib/data/catalog";
 import { timeAgo } from "@/lib/utils";
-import { Badge, Panel, btnPrimary } from "@/components/admin/ui";
+import { Badge, Panel, btnGhost, btnPrimary } from "@/components/admin/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -56,10 +56,16 @@ export default async function AdminDashboardPage() {
           <p className="text-[12px] text-text-3">
             {list.length} judul di database
           </p>
-          <Link href="/admin/anime/baru" className={btnPrimary}>
-            <Plus className="size-4" aria-hidden />
-            Judul baru
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href="/admin/impor" className={btnGhost}>
+              <Download className="size-3.5" aria-hidden />
+              Impor metadata
+            </Link>
+            <Link href="/admin/anime/baru" className={btnPrimary}>
+              <Plus className="size-4" aria-hidden />
+              Judul baru
+            </Link>
+          </div>
         </div>
 
         {list.length === 0 ? (

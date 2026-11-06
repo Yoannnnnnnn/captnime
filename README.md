@@ -53,7 +53,7 @@ Tidak perlu konfigurasi apa pun — katalog demo sudah terisi.
 | **Jadwal** | Jadwal rilis mingguan, hari ini disorot otomatis. |
 | **Daftar Saya** | Watchlist + riwayat tontonan. Tamu: `localStorage`. Login: tabel `progress`/`watchlist`, tersinkron antar perangkat. |
 | **Akun** | `/masuk`, `/daftar`, `/akun`. Kata sandi scrypt + salt, sesi cookie `httpOnly` bertanda token acak (yang disimpan hanya hash-nya), pembatasan 6 percobaan gagal/15 menit, data tamu disalin otomatis saat pertama masuk. Lihat [`docs/AUTENTIKASI.md`](docs/AUTENTIKASI.md). |
-| **Panel admin** | `/admin`: login berbasis password env, CRUD judul, episode, server streaming, dan subtitle. Perubahan langsung tayang lewat revalidasi — tanpa deploy ulang. Lihat [`docs/DATABASE.md`](docs/DATABASE.md). |
+| **Panel admin** | `/admin`: login berbasis password env, CRUD judul, episode, server streaming, dan subtitle, plus **impor metadata dari AniList**. Perubahan langsung tayang lewat revalidasi — tanpa deploy ulang. Lihat [`docs/DATABASE.md`](docs/DATABASE.md) & [`docs/METADATA.md`](docs/METADATA.md). |
 | **UX** | Mobile-first, bottom tab bar, drawer menu, skeleton loading, halaman 404, `prefers-reduced-motion`, fokus keyboard, aria-label, metadata SEO + sitemap + PWA manifest. |
 
 Pintasan pemutar: `spasi`/`K` putar-jeda · `←`/`→` ±10 detik · `↑`/`↓` volume ·
@@ -155,6 +155,19 @@ npm run build && npm start
   invalidasi cache provider, jadi perubahan tampil segera.
 - Pindah ke Postgres nanti hanya menyentuh `schema.sql` + `repository.ts`.
 
+### Impor metadata
+
+`/admin/impor` mencari judul di **AniList** (GraphQL publik) lalu membuat draf
+berisi judul, sinopsis, genre, tahun, musim, studio, skor, poster, dan banner.
+Draf **tidak terbit** sampai episode + sumber video dilengkapi dan Anda
+mencentang “Terbitkan di situs”.
+
+- Yang diimpor hanya metadata — **bukan video, bukan subtitle**.
+- Slug otomatis unik (`judul`, `judul-2`, …).
+- Batas ±90 permintaan/menit AniList dihormati: 12 hasil per pencarian.
+- Endpoint bisa dialihkan lewat `CAPTNIME_ANILIST_ENDPOINT` (proxy/mock).
+
+Rincian pemetaan field: [`docs/METADATA.md`](docs/METADATA.md).
 Rincian skema, backup, deployment, dan migrasi: [`docs/DATABASE.md`](docs/DATABASE.md).
 
 ---
@@ -255,11 +268,13 @@ adapter-nya dipasang di sisi server Anda melalui `RemoteProvider`.
 1. ~~Database + Admin CMS~~ — **selesai** di Fase 1 (`node:sqlite` + `/admin`).
 2. ~~Autentikasi pengguna~~ — **selesai** di Fase 2 (scrypt + sesi database, sinkron
    riwayat & daftar tonton).
-3. **Penyempurnaan akun** — verifikasi email, reset/ganti kata sandi, hapus akun,
+3. **Penyempurnaan katalog** — jadwal tayang otomatis dari metadata, penerjemahan
+   genre ke bahasa Indonesia, dan penandaan judul yang punya embed resmi.
+4. **Penyempurnaan akun** — verifikasi email, reset/ganti kata sandi, hapus akun,
    opsional OAuth. Lihat batasan di `docs/AUTENTIKASI.md`.
-4. **Hosting video** — *sebagian*: tiga jalur sumber (embed, HLS/MP4 eksternal,
+5. **Hosting video** — *sebagian*: tiga jalur sumber (embed, HLS/MP4 eksternal,
    CDN base) sudah ada. Berikutnya: unggah dari panel, FFmpeg pipeline terpisah,
    signed URL/anti-hotlink bila konten berlisensi sudah tersedia (`docs/VIDEO.md`).
-5. **CDN + rate limiting** di depan endpoint manifest dan `/api/me/*`.
-6. **Notifikasi rilis** (web push) untuk judul di daftar tonton.
-7. **Migrasi Postgres** bila penulis data atau trafik sudah banyak (lihat docs/DATABASE.md).
+6. **CDN + rate limiting** di depan endpoint manifest dan `/api/me/*`.
+7. **Notifikasi rilis** (web push) untuk judul di daftar tonton.
+8. **Migrasi Postgres** bila penulis data atau trafik sudah banyak (lihat docs/DATABASE.md).

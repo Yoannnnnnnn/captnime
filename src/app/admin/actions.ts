@@ -12,8 +12,10 @@ import {
   deleteServer,
   deleteSubtitle,
   saveEpisode,
+  uniqueSlug,
   validateSlug,
 } from "@/lib/db/repository";
+import { getAnimeById } from "@/lib/metadata/anilist";
 import { databaseProvider } from "@/lib/providers/database";
 import {
   ADMIN_COOKIE,
@@ -143,6 +145,62 @@ export async function deleteAnimeAction(formData: FormData) {
   deleteAnime(slug);
   refresh(slug);
   redirect("/admin");
+}
+
+/* ------------------------------------------------------------------ */
+/* Impor metadata                                                     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Buat draf judul dari metadata AniList (tanpa episode & server).
+ * Video tetap diisi manual: embed resmi atau berkas milik sendiri.
+ */
+export async function importAnimeAction(formData: FormData) {
+  await requireAdmin();
+
+  const id = num(formData, "anilistId", 0);
+  const term = str(formData, "q");
+  if (!id) redirect(`/admin/impor?error=id${term ? `&q=${encodeURIComponent(term)}` : ""}`);
+
+  const result = await getAnimeById(id);
+  if (!result.ok || !result.data) {
+    redirect(
+      `/admin/impor?error=fetch${term ? `&q=${encodeURIComponent(term)}` : ""}`,
+    );
+  }
+
+  const draft = result.data;
+  const slug = uniqueSlug(draft.title);
+
+  createOrUpdateAnime({
+    slug,
+    title: draft.title,
+    titleAlt: draft.titleAlt,
+    synopsis: draft.synopsis,
+    type: draft.type,
+    status: draft.status,
+    year: draft.year,
+    season: draft.season,
+    studio: draft.studio,
+    score: draft.score,
+    rating: draft.rating,
+    totalEpisodes: draft.totalEpisodes,
+    durationMinutes: draft.durationMinutes,
+    paletteFrom: draft.palette[0],
+    paletteTo: draft.palette[1],
+    motif: draft.motif,
+    poster: draft.poster,
+    banner: draft.banner,
+    featured: false,
+    tags: ["Impor AniList", draft.sourceUrl ? `Sumber: ${draft.sourceUrl}` : ""].filter(Boolean),
+    relatedSlugs: [],
+    genres: draft.genres,
+    // Draf: sengaja belum terbit sampai admin menambahkan episode + sumber video.
+    published: false,
+  });
+
+  refresh(slug);
+  redirect(`/admin/anime/${slug}?saved=1`);
 }
 
 /* ------------------------------------------------------------------ */

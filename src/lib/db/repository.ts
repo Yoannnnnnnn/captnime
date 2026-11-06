@@ -379,6 +379,23 @@ export function getAdminAnime(slug: string): AdminAnime | null {
   return { anime, episodeRows, published: meta?.published === 1 };
 }
 
+export function animeExists(slug: string): boolean {
+  return Boolean(
+    getDb().prepare(`SELECT 1 AS ok FROM anime WHERE slug = ?`).get(slug),
+  );
+}
+
+/** Buat slug unik: `judul`, `judul-2`, `judul-3`, … */
+export function uniqueSlug(base: string): string {
+  const clean = genreSlug(base) || `anime-${Date.now().toString(36)}`;
+  if (!animeExists(clean)) return clean;
+  for (let i = 2; i < 100; i += 1) {
+    const candidate = `${clean}-${i}`;
+    if (!animeExists(candidate)) return candidate;
+  }
+  return `${clean}-${Date.now().toString(36)}`;
+}
+
 export function getAllGenres(): string[] {
   const rows = getDb()
     .prepare(`SELECT name FROM genres ORDER BY name ASC`)
