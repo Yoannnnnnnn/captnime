@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { MobileTabBar } from "@/components/mobile-tabbar";
 import { SideNav } from "@/components/side-nav";
+import { SessionProvider } from "@/components/session-provider";
 import { ALL_GENRES } from "@/lib/data/catalog";
 
 export const metadata: Metadata = {
@@ -52,24 +53,26 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className="min-h-dvh bg-bg text-text antialiased">
-        <a
-          href="#konten"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-md focus:bg-gold focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-bg"
-        >
-          Lompat ke konten
-        </a>
+        <SessionProvider>
+          <a
+            href="#konten"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-md focus:bg-gold focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-bg"
+          >
+            Lompat ke konten
+          </a>
 
-        <SideNav genres={ALL_GENRES} />
-        <SiteHeader />
+          <SideNav genres={ALL_GENRES} />
+          <SiteHeader />
 
-        <div className="lg:pl-[228px]">
-          <main id="konten" className="relative pb-16 md:pb-0">
-            {children}
-          </main>
-          <SiteFooter />
-        </div>
+          <div className="lg:pl-[228px]">
+            <main id="konten" className="relative pb-16 md:pb-0">
+              {children}
+            </main>
+            <SiteFooter />
+          </div>
 
-        <MobileTabBar />
+          <MobileTabBar />
+        </SessionProvider>
       </body>
     </html>
   );

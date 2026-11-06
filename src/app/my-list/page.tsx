@@ -11,12 +11,14 @@ import {
   useWatchlist,
 } from "@/lib/user-store";
 import { cn, formatDuration, padEpisode, timeAgo, watchPercent } from "@/lib/utils";
+import { useSession } from "@/components/session-provider";
 
 type Tab = "daftar" | "riwayat";
 
 export default function MyListPage() {
   const watchlist = useWatchlist();
   const history = useHistory();
+  const { user, loading: sessionLoading } = useSession();
   const [tab, setTab] = useState<Tab>("daftar");
   const [mounted, setMounted] = useState(false);
 
@@ -35,7 +37,36 @@ export default function MyListPage() {
           Daftar Saya
         </h1>
         <p className="mt-1 text-[13px] text-text-2">
-          Tersimpan otomatis di perangkat ini — tanpa perlu akun.
+          {sessionLoading ? (
+            "Memeriksa akun…"
+          ) : user && user.emailVerified ? (
+            <>
+              Tersinkron dengan akun{" "}
+              <span className="text-text">{user.name}</span> — ikut ke perangkat lain.
+            </>
+          ) : user ? (
+            <>
+              Tersimpan di peramban ini.{" "}
+              <Link
+                href="/akun"
+                className="text-gold underline-offset-4 hover:underline"
+              >
+                Verifikasi email
+              </Link>{" "}
+              agar ikut ke perangkat lain.
+            </>
+          ) : (
+            <>
+              Tersimpan di perangkat ini.{" "}
+              <Link
+                href="/masuk?next=%2Fmy-list"
+                className="text-gold underline-offset-4 hover:underline"
+              >
+                Masuk
+              </Link>{" "}
+              agar ikut ke perangkat lain.
+            </>
+          )}
         </p>
       </header>
 

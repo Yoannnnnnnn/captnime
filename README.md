@@ -4,33 +4,46 @@ Platform streaming anime — antarmuka cepat, katalog rapi, subtitle Indonesia, 
 lanjut-tonton otomatis. Dibangun dengan **Next.js 15 (App Router) + TypeScript +
 Tailwind CSS 4**.
 
-> **Status:** MVP fitur inti selesai dan berjalan penuh dengan katalog demo
-> (konten orisinal). Lapisan provider membuat aplikasi siap disambungkan ke
-> sumber data produksi tanpa mengubah satu pun komponen UI.
+> **Status:** MVP fitur inti selesai, ditambah Fase 1 (CMS + basis data),
+> Fase 2 (akun pengguna), dan email transaksional (verifikasi akun + reset kata
+> sandi). Katalog dikelola lewat `/admin` tanpa deploy ulang, riwayat/daftar
+> tonton tersimpan di akun — bukan cuma di satu perangkat. Tamu tetap bisa
+> menonton tanpa login.
 
 ---
 
 ## 1. Menjalankan
 
+**Butuh Node.js 22.13 atau lebih baru** (aplikasi memakai modul bawaan
+`node:sqlite` yang belum ada di Node 20, dan `require()` modul ESM yang baru
+didukung sejak Node 22.12). Versi yang dipakai pengembangan ada di `.nvmrc`:
+
 ```bash
-npm install
+nvm use          # atau fnm use / asdf install
+npm ci           # memasang persis versi di package-lock.json
 npm run dev      # http://localhost:3000
-npm run build && npm start   # produksi
+```
+
+```bash
+npm run build && npm start   # produksi lokal
 npm run typecheck            # cek tipe
+npm run cek-email            # periksa kredensial Mailjet tanpa membuka aplikasi
 npm run clean                # buang cache .next & .next-build
 ```
 
-Host dan port bisa diatur lewat env (default `0.0.0.0:3000`):
+Skrip di atas **jalan di PowerShell, cmd, macOS, dan Linux** — tidak lagi
+memakai sintaks shell seperti `VAR=x command` atau `${PORT:-3000}`. Port
+diatur lewat env `PORT` (default `3000`) dan host lewat `HOST` (default
+`0.0.0.0`):
 
 ```bash
-HOST=127.0.0.1 PORT=3001 npm start   # hanya loopback
-HOST=::        PORT=3000 npm start   # dual-stack IPv4 + IPv6
+PORT=3001 npm start              # macOS/Linux
+$env:PORT=3001; npm start        # PowerShell
 ```
 
-`HOST=::` berguna di lingkungan container/preview yang mungkin menghubungi
-`localhost` lewat IPv6 (`::1`); pada kernel dengan `bindv6only=0` satu listener
-melayani kedua keluarga alamat. Untuk sebagian besar deployment,
-nilai default sudah cukup.
+> Panduan langkah demi langkah — termasuk memasang di Windows lewat VS Code,
+> menyiapkan Mailjet, dan daftar masalah yang sering muncul — ada di
+> [`docs/UJI-LOKAL.md`](docs/UJI-LOKAL.md).
 
 > **Catatan operasional:** pada lingkungan preview, buka aplikasi lewat panel
 > preview yang disediakan platform. Membuka URL preview secara manual di tab
@@ -45,12 +58,14 @@ Tidak perlu konfigurasi apa pun — katalog demo sudah terisi.
 
 | Area | Detail |
 | --- | --- |
-| **Beranda** | Hero carousel otomatis, rail Trending dengan peringkat, Sedang Tayang, Baru Ditambahkan, Rating Tertinggi, chip genre, dan panel “Lanjut Tonton”. |
+| **Beranda** | Masthead bernomor, feature asimetris 8 kolom, panel “Lanjut Tonton” + rilis hari ini, daftar “Paling ditonton” berangka, mosaik ukuran campur, arsip episode, dan rating tertinggi. |
 | **Katalog** | Pencarian teks, filter genre/status/tipe, 4 opsi pengurutan, paginasi, dan empty-state yang informatif. |
 | **Detail anime** | Backdrop dinamis, poster, sinopsis, tabel informasi (studio/musim/durasi/jadwal), daftar episode dengan progres, anime terkait, tombol daftar tonton. |
 | **Pemutar** | HLS (hls.js) & MP4, pilih server, subtitle Indonesia/Inggris on-off, resume dari posisi terakhir, auto-next dengan hitungan, kecepatan 0.75×–2×, PiP, layar penuh, pintasan keyboard, penanganan error + tombol ganti server. |
 | **Jadwal** | Jadwal rilis mingguan, hari ini disorot otomatis. |
-| **Daftar Saya** | Watchlist + riwayat tontonan (progres per episode) tersimpan di perangkat. |
+| **Daftar Saya** | Watchlist + riwayat tontonan. Tamu: `localStorage`. Login: tabel `progress`/`watchlist`, tersinkron antar perangkat. |
+| **Akun** | `/masuk`, `/daftar`, `/akun`, `/lupa-sandi`, `/verifikasi`, `/atur-ulang`. Kata sandi scrypt + salt, sesi cookie `httpOnly` (yang disimpan hanya hash token), pembatasan 6 percobaan gagal/15 menit, data tamu disalin otomatis saat pertama masuk. Self-service: **ganti sandi**, **verifikasi email** lewat tautan sekali pakai, **reset sandi lewat email**, **kode pemulihan** sebagai cadangan, **keluarkan perangkat lain**, dan **hapus akun**. Lihat [`docs/AUTENTIKASI.md`](docs/AUTENTIKASI.md) & [`docs/EMAIL.md`](docs/EMAIL.md). |
+| **Panel admin** | `/admin`: login berbasis password env, CRUD judul, episode, server streaming, dan subtitle, plus **impor metadata dari AniList**. Perubahan langsung tayang lewat revalidasi — tanpa deploy ulang. Lihat [`docs/DATABASE.md`](docs/DATABASE.md) & [`docs/METADATA.md`](docs/METADATA.md). |
 | **UX** | Mobile-first, bottom tab bar, drawer menu, skeleton loading, halaman 404, `prefers-reduced-motion`, fokus keyboard, aria-label, metadata SEO + sitemap + PWA manifest. |
 
 Pintasan pemutar: `spasi`/`K` putar-jeda · `←`/`→` ±10 detik · `↑`/`↓` volume ·
@@ -102,6 +117,10 @@ src/
 │  ├─ watch/[slug]/[ep]/ # halaman menonton
 │  ├─ schedule/          # jadwal rilis
 │  ├─ my-list/           # watchlist & riwayat
+│  ├─ admin/             # panel CMS (login + panel terproteksi)
+│  ├─ masuk/, daftar/    # autentikasi pengguna
+│  ├─ akun/              # profil + ringkasan aktivitas
+│  ├─ api/me/            # state, progress, watchlist, import
 │  ├─ manifest.ts        # PWA
 │  ├─ sitemap.ts, robots.ts
 │  └─ globals.css        # design system (Tailwind 4 @theme)
@@ -113,6 +132,10 @@ src/
    │  ├─ local.ts        # katalog demo in-memory
    │  └─ remote.ts       # adapter API JSON + normalizer
    ├─ data/catalog.ts    # seed 18 judul orisinal
+   ├─ db/                # SQLite: schema.sql, client, repository, seed
+   ├─ auth.ts            # sesi cookie admin (HMAC)
+   ├─ auth-user.ts       # scrypt, sesi pengguna, rate limit
+   ├─ db/accounts.ts     # users, sessions, watchlist, progress
    ├─ user-store.ts      # localStorage: riwayat, progres, watchlist
    └─ utils.ts           # format tanggal/durasi, helper
 ```
@@ -122,7 +145,97 @@ src/
 
 ---
 
-## 4. Mengganti sumber data
+## 5. Panel admin & basis data
+
+Katalog bisa dioperasikan tanpa developer lewat `/admin`:
+
+```bash
+CAPTNIME_DATA_SOURCE=database
+CAPTNIME_ADMIN_PASSWORD=sandi-kuat-anda
+npm run build && npm start
+# buka http://localhost:3000/admin
+```
+
+- Login: satu kata sandi dari `CAPTNIME_ADMIN_PASSWORD`; sesi cookie `httpOnly`
+  bertanda tangan HMAC, berlaku 12 jam.
+- Kelola **judul** (metadata, genre, palet poster, publikasi), **episode**
+  (nomor, tanggal, filler), **server streaming** (HLS/MP4 + kualitas), dan
+  **subtitle** (.vtt, satu bisa jadi default).
+- Basis data: SQLite lewat `node:sqlite`, default `data/captnime.db`. Saat masih
+  kosong, database otomatis diisi 18 judul dari katalog.
+- Halaman publik memakai ISR; setiap penyimpanan memicu `revalidatePath()` +
+  invalidasi cache provider, jadi perubahan tampil segera.
+- Pindah ke Postgres nanti hanya menyentuh `schema.sql` + `repository.ts`.
+
+### Impor metadata
+
+`/admin/impor` mencari judul di **AniList** (GraphQL publik) lalu membuat draf
+berisi judul, sinopsis, genre, tahun, musim, studio, skor, poster, banner, dan
+**jadwal tayang berikutnya** (dikonversi ke WIB, langsung muncul di `/schedule`).
+Draf **tidak terbit** sampai episode + sumber video dilengkapi dan Anda
+mencentang “Terbitkan di situs”.
+
+- Yang diimpor hanya metadata — **bukan video, bukan subtitle**.
+- Slug otomatis unik (`judul`, `judul-2`, …).
+- Batas ±90 permintaan/menit AniList dihormati: 12 hasil per pencarian.
+- Endpoint bisa dialihkan lewat `CAPTNIME_ANILIST_ENDPOINT` (proxy/mock).
+- Jalur impor **tidak** memakai kuota saat halaman dibuka tanpa kata kunci.
+- Di editor judul ada tombol **Sinkronkan dari AniList** untuk memperbarui jadwal.
+
+Rincian pemetaan field: [`docs/METADATA.md`](docs/METADATA.md).
+Rincian skema, backup, deployment, dan migrasi: [`docs/DATABASE.md`](docs/DATABASE.md).
+
+---
+
+## 6. Akun pengguna
+
+```bash
+# tanpa konfigurasi tambahan — tabel dibuat otomatis di database yang sama
+npm run build && npm start
+# /daftar → /masuk → /akun
+```
+
+- Kata sandi: **scrypt** (N=16384, r=8, p=1, salt acak) — bukan plaintext, bukan
+  MD5/SHA biasa.
+- Sesi: token 32 byte di cookie `httpOnly` + `SameSite=Lax`; database hanya
+  menyimpan SHA-256 token. Berlaku 30 hari.
+- Percobaan masuk dibatasi 6 kali per IP+email dalam 15 menit.
+- Pengunjung tanpa akun tetap bisa menonton dan memakai "Daftar Saya" lewat
+  `localStorage`. Saat pertama kali masuk, data tamu itu **disalin ke akun**
+  (data server yang lebih baru menang) lalu kunci lokal dibersihkan.
+- Mode akun tetap memakai katalog dari provider mana pun; metadata judul
+  dilengkapi dari provider aktif saat state dikirim ke klien.
+
+### Email: verifikasi & reset
+
+```bash
+# .env.local — paket gratis Mailjet cukup (6.000 email/bulan, 200/hari)
+MJ_APIKEY_PUBLIC=
+MJ_APIKEY_PRIVATE=
+CAPTNIME_MAIL_FROM=halo@domain-anda.com   # alamat yang sudah divalidasi di Mailjet
+CAPTNIME_APP_URL=https://domain-anda.com  # basis tautan di dalam email
+```
+
+- Daftar → email verifikasi (berlaku 24 jam, sekali pakai). Pengguna **tetap
+  bisa masuk dan menonton** sebelum verifikasi; yang belum aktif hanya
+  sinkronisasi riwayat & daftar tonton (tetap tersimpan di peramban).
+- Lupa sandi → tautan `/atur-ulang` (berlaku 60 menit, sekali pakai, semua
+  sesi lama dikeluarkan). Respons halaman sama untuk email terdaftar maupun
+  tidak.
+- Token disimpan sebagai SHA-256; tautan asli hanya ada di email.
+- Tanpa kredensial Mailjet, fitur ini mati dengan sopan dan kode pemulihan
+  tetap bisa dipakai.
+
+Nilai placeholder seperti `xxxx` dari `.env.example` **sengaja ditolak** —
+kalau belum diganti, aplikasi melaporkan "email belum aktif", bukan "gagal
+dikirim". Periksa kredensial tanpa membuka aplikasi dengan `npm run cek-email`.
+
+Rincian: [`docs/EMAIL.md`](docs/EMAIL.md). Tabel, endpoint, keamanan, dan
+batasan akun: [`docs/AUTENTIKASI.md`](docs/AUTENTIKASI.md).
+
+---
+
+## 7. Mengganti sumber data
 
 ```bash
 # .env.local
@@ -148,7 +261,27 @@ Kalau bentuk respons API Anda berbeda, cukup sesuaikan `mapAnime()` di
 
 ---
 
-## 5. Soal sumber konten (penting)
+## 8. Sumber video & biaya
+
+Tiga jalur didukung, dipilih per server di panel admin:
+
+| Tipe | Isi | Biaya |
+| --- | --- | --- |
+| `embed` | Tautan YouTube/Vimeo/Dailymotion/Bilibili resmi; dimuat dalam iframe dengan allowlist host | Rp0 |
+| `hls` / `mp4` | Berkas milik sendiri atau CDN mitra | Sesuai CDN |
+| `hls` + `CAPTNIME_MEDIA_BASE_URL` | Path relatif (`/videos/…`) otomatis diberi awalan CDN | Sesuai CDN |
+
+Keputusan untuk tahap ini: **embed + URL eksternal** (tanpa biaya), dengan jalur
+Cloudflare R2 disiapkan lewat satu env var — bukan hosting video sendiri.
+
+Hitungan singkat (20 judul × 12 episode, 1080p, 600 GB ditonton/bulan):
+R2 ±**$4/bulan** (egress $0) vs Bunny Asia ±$21 vs Cloudflare Stream ±$65.
+Angka lengkap, konfigurasi FFmpeg + R2, dan catatan legalitas:
+[`docs/VIDEO.md`](docs/VIDEO.md).
+
+---
+
+## 9. Soal sumber konten (penting)
 
 Repo ini **tidak** berisi dan **tidak** menyalurkan materi berhak cipta pihak
 mana pun.
@@ -170,11 +303,20 @@ adapter-nya dipasang di sisi server Anda melalui `RemoteProvider`.
 
 ---
 
-## 6. Roadmap berikutnya
+## 10. Roadmap berikutnya
 
-1. **Autentikasi** (Better Auth / NextAuth) → watchlist & progres pindah ke database.
-2. **Database** (Postgres + Prisma/Drizzle) untuk katalog, episode, dan server.
-3. **Admin CMS** untuk CRUD judul, episode, dan link server.
-4. **Transcoding pipeline** (FFmpeg + HLS multi-bitrate) bila Anda meng-host video sendiri.
-5. **CDN + rate limiting** di depan endpoint manifest.
-6. **Notifikasi rilis** (web push) untuk judul di daftar tonton.
+1. ~~Database + Admin CMS~~ — **selesai** di Fase 1 (`node:sqlite` + `/admin`).
+2. ~~Autentikasi pengguna~~ — **selesai** di Fase 2 (scrypt + sesi database, sinkron
+   riwayat & daftar tonton).
+3. **Penyempurnaan katalog** — jadwal tayang otomatis dari metadata, penerjemahan
+   genre ke bahasa Indonesia, dan penandaan judul yang punya embed resmi.
+4. ~~Penyempurnaan akun~~ — **selesai**: ganti sandi, verifikasi email,
+   reset lewat email, kode pemulihan, keluarkan perangkat lain, dan hapus akun.
+   Sisa opsional: ganti alamat email, webhook bounce, OAuth/2FA
+   (lihat `docs/EMAIL.md` & `docs/AUTENTIKASI.md`).
+5. **Hosting video** — *sebagian*: tiga jalur sumber (embed, HLS/MP4 eksternal,
+   CDN base) sudah ada. Berikutnya: unggah dari panel, FFmpeg pipeline terpisah,
+   signed URL/anti-hotlink bila konten berlisensi sudah tersedia (`docs/VIDEO.md`).
+6. **CDN + rate limiting** di depan endpoint manifest dan `/api/me/*`.
+7. **Notifikasi rilis** (web push) untuk judul di daftar tonton.
+8. **Migrasi Postgres** bila penulis data atau trafik sudah banyak (lihat docs/DATABASE.md).

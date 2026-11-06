@@ -30,7 +30,11 @@ export interface Subtitle {
 export interface StreamServer {
   id: string;
   label: string; // "Server 1", "Mirror HD", dst.
-  type: "hls" | "mp4";
+  /**
+   * hls/mp4 = berkas milik sendiri (bisa lewat CDN).
+   * embed   = pemutar pihak ketiga (YouTube resmi, Vimeo, Dailymotion, Bilibili).
+   */
+  type: "hls" | "mp4" | "embed";
   url: string;
   quality: string; // "1080p" | "720p" | "480p" | "auto"
   note?: string;

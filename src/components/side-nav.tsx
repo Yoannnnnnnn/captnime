@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bookmark, CalendarDays, Compass, House, Search } from "lucide-react";
+import { Bookmark, CalendarDays, Compass, House, LogIn, Search } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { useSession } from "@/components/session-provider";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -15,6 +16,7 @@ const NAV = [
 
 export function SideNav({ genres }: { genres: string[] }) {
   const pathname = usePathname();
+  const { user, loading } = useSession();
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-[228px] flex-col border-r border-line bg-bg lg:flex">
@@ -76,6 +78,34 @@ export function SideNav({ genres }: { genres: string[] }) {
       </nav>
 
       <div className="border-t border-line p-3">
+        {!loading && user ? (
+          <Link
+            href="/akun"
+            className="mb-2 flex items-center gap-2.5 rounded-md border border-line px-2 py-2 transition-colors hover:border-line-2"
+          >
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-gold/15 font-mono text-[11px] font-semibold uppercase text-gold">
+              {user.name.slice(0, 1)}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[12.5px] font-medium text-text">
+                {user.name}
+              </span>
+              <span className="block text-[10.5px] text-text-3">Kelola akun</span>
+            </span>
+          </Link>
+        ) : null}
+
+        {!loading && !user ? (
+          <Link
+            href="/masuk"
+            className="mb-2 flex items-center gap-2 rounded-md border border-line px-2.5 py-2 text-[12px] text-text-2 transition-colors hover:border-line-2 hover:text-text"
+          >
+            <LogIn className="size-3.5" />
+            <span className="flex-1">Masuk</span>
+            <span className="text-[10.5px] text-gold">Daftar</span>
+          </Link>
+        ) : null}
+
         <Link
           href="/browse"
           className="flex items-center gap-2 rounded-md border border-line px-2.5 py-2 text-[12px] text-text-2 transition-colors hover:border-line-2 hover:text-text"

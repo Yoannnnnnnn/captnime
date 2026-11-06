@@ -429,6 +429,33 @@ export function VideoPlayer({
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const bufferPercent = duration > 0 ? (buffered / duration) * 100 : 0;
 
+  /* ------------------------------------------------------------------ */
+  /* Mode embed: pemutar pihak ketiga (YouTube resmi, Vimeo, dst.)       */
+  /* ------------------------------------------------------------------ */
+  if (server?.type === "embed") {
+    return (
+      <div className="space-y-3">
+        <div className="relative isolate aspect-video w-full overflow-hidden rounded-xl bg-black ring-1 ring-white/10 sm:rounded-2xl">
+          <EmbedFrame server={server} anime={anime} episode={episode} />
+        </div>
+
+        <ServerBar
+          servers={episode.servers}
+          activeIndex={serverIndex}
+          onSelect={(index) => {
+            setServerIndex(index);
+            setError(null);
+          }}
+        />
+
+        <p className="px-1 text-[11px] text-text-3">
+          Sumber ini diputar langsung oleh platform pemiliknya, jadi subtitle dan
+          kualitas diatur lewat tombol di dalam pemutar.
+        </p>
+      </div>
+    );
+  }
+
   const applyResume = () => {
     if (resumeFrom) {
       seek(resumeFrom);
@@ -829,40 +856,12 @@ export function VideoPlayer({
       </div>
 
       {/* ===================== Bar server ===================== */}
-      <div className="rounded-xl border border-white/8 bg-ink-850/70 p-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-bold uppercase tracking-widest text-text-2">
-            Server
-          </span>
-          {episode.servers.length === 0 && (
-            <span className="text-[12px] text-text-2">Belum ada sumber video.</span>
-          )}
-          {episode.servers.map((s, i) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => setServerIndex(i)}
-              className={cn(
-                "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold transition",
-                i === serverIndex
-                  ? "border-brand-500/70 bg-brand-500/15 text-brand-400"
-                  : "border-white/10 bg-white/5 text-text hover:border-white/25 hover:bg-white/10",
-              )}
-            >
-              {s.label}
-              <span className="rounded bg-white/10 px-1 py-0.5 text-[9px] uppercase text-text-2">
-                {s.quality}
-              </span>
-            </button>
-          ))}
-          {episode.subtitles.length > 0 && (
-            <span className="ml-auto flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide text-cyan-glow">
-              <Subtitles className="size-3" />
-              Sub {activeSubtitle?.label ?? "Indonesia"}
-            </span>
-          )}
-        </div>
-      </div>
+      <ServerBar
+        servers={episode.servers}
+        activeIndex={serverIndex}
+        onSelect={(index) => setServerIndex(index)}
+        subtitleLabel={episode.subtitles.length > 0 ? activeSubtitle?.label ?? "Indonesia" : null}
+      />
 
       {/* Info episode kecil */}
       <p className="px-1 text-[11px] text-text-3">
@@ -875,5 +874,119 @@ export function VideoPlayer({
         {nextEpisode && ` · Berikutnya: Episode ${nextEpisode.number}`}
       </p>
     </div>
+  );
+}
+
+
+/* ------------------------------------------------------------------ */
+/* Komponen pendukung                                                 */
+/* ------------------------------------------------------------------ */
+
+function ServerBar({
+  servers,
+  activeIndex,
+  onSelect,
+  subtitleLabel,
+}: {
+  servers: StreamServer[];
+  activeIndex: number;
+  onSelect: (index: number) => void;
+  subtitleLabel?: string | null;
+}) {
+  return (
+    <div className="rounded-xl border border-white/8 bg-ink-850/70 p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[11px] font-bold uppercase tracking-widest text-text-2">
+          Server
+        </span>
+        {servers.length === 0 && (
+          <span className="text-[12px] text-text-2">Belum ada sumber video.</span>
+        )}
+        {servers.map((s, i) => (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => onSelect(i)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold transition",
+              i === activeIndex
+                ? "border-brand-500/70 bg-brand-500/15 text-brand-400"
+                : "border-white/10 bg-white/5 text-text hover:border-white/25 hover:bg-white/10",
+            )}
+          >
+            {s.label}
+            <span className="rounded bg-white/10 px-1 py-0.5 text-[9px] uppercase text-text-2">
+              {s.quality}
+            </span>
+          </button>
+        ))}
+        {subtitleLabel ? (
+          <span className="ml-auto flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide text-cyan-glow">
+            <Subtitles className="size-3" />
+            Sub {subtitleLabel}
+          </span>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+/** Host yang boleh dimuat dalam iframe — daftar sejalur dengan lib/media.ts. */
+const EMBED_HOST_RE =
+  /^https:\/\/(?:[a-z0-9-]+\.)*(youtube-nocookie\.com|youtube\.com|youtu\.be|vimeo\.com|dailymotion\.com|dai\.ly|bilibili\.com|ok\.ru|vk\.com|vkvideo\.ru)\//i;
+
+function EmbedFrame({
+  server,
+  anime,
+  episode,
+}: {
+  server: StreamServer;
+  anime: Anime;
+  episode: Episode;
+}) {
+  const recorded = useRef(false);
+
+  // Embed tidak memberi tahu posisi tonton; catat pembukaan episode saja agar
+  // judul muncul di "Lanjut Tonton" dan riwayat.
+  useEffect(() => {
+    if (recorded.current) return;
+    recorded.current = true;
+    saveProgress({
+      slug: anime.slug,
+      title: anime.title,
+      episode: episode.number,
+      position: 1,
+      duration: episode.duration,
+      palette: anime.palette,
+      motif: anime.motif,
+      poster: anime.poster,
+      totalEpisodes: anime.totalEpisodes,
+    });
+  }, [anime, episode]);
+
+  if (!EMBED_HOST_RE.test(server.url)) {
+    return (
+      <div className="grid h-full place-items-center px-6 text-center">
+        <div>
+          <p className="text-sm font-semibold text-text">Sumber embed tidak dikenali</p>
+          <p className="mt-1 text-[12px] leading-relaxed text-text-3">
+            Hanya tautan YouTube, Vimeo, Dailymotion, Bilibili, OK.ru, dan VK yang
+            diizinkan. Periksa lagi URL-nya di panel admin.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <iframe
+      src={server.url}
+      title={`${anime.title} episode ${episode.number}`}
+      className="h-full w-full"
+      allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
+      allowFullScreen
+      referrerPolicy="strict-origin-when-cross-origin"
+      sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+    />
   );
 }
