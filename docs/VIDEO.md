@@ -118,6 +118,51 @@ tonton, mis. `/watch/akuarium-kota-tua/1?server=4`. Berguna untuk membagikan
 tautan yang langsung memakai sumber resmi, dan membuat perilaku embed bisa
 diuji otomatis tanpa mengeklik.
 
+## Unggah berkas & tautan bertanda tangan
+
+Panel admin punya formulir **Unggah berkas** di tiap episode (di bawah “Tambah
+server”). Jenis berkas ditentukan dari ekstensinya:
+
+| Ekstensi | Hasil |
+| --- | --- |
+| `.mp4` `.m4v` `.webm` `.ogv` `.mov` | server mp4 baru pada episode itu |
+| `.vtt` `.srt` `.ass` | subtitle baru (`lang=id`, default aktif) |
+| lainnya | ditolak: `?error=berkas-jenis` |
+
+Berkas disimpan **di luar `public/`** (default `data/uploads/`, ubah lewat
+`CAPTNIME_UPLOAD_DIR`) dengan nama acak, dan database hanya menyimpan penanda
+`local:<id>`. Saat halaman tonton dirender, penanda itu diubah menjadi
+
+```
+/media/<id>?exp=<epoch-ms>&sig=<hmac-sha256(id:exp)>
+```
+
+yang **kedaluwarsa 6 jam** (`SIGNED_TTL_MS`). Tanpa tanda tangan yang sah route
+`/media/[file]` menjawab `403`, dan berkas yang tidak ada menjawab `404` — jadi
+menyalin tautan lalu menyimpannya untuk dipakai besok tidak berhasil. Route itu
+mendukung `Range` (`206 Partial Content`) sehingga pemutar bisa melompat ke
+tengah video.
+
+Batas dan rahasia:
+
+| Env | Arti |
+| --- | --- |
+| `CAPTNIME_UPLOAD_DIR` | folder simpan (default `data/uploads`) |
+| `CAPTNIME_UPLOAD_MAX_MB` | batas ukuran per berkas (default 512) |
+| `CAPTNIME_MEDIA_SECRET` | secret HMAC tautan; kosong → turunan `CAPTNIME_ADMIN_SECRET`/`CAPTNIME_ADMIN_PASSWORD` |
+
+`next.config.ts` menaikkan `experimental.serverActions.bodySizeLimit` ke `512mb`
+karena batas bawaan server action hanya 1 MB; kalau Anda menaikkan
+`CAPTNIME_UPLOAD_MAX_MB` melebihi 512, naikkan juga nilai itu.
+
+Menghapus server/subtitle dari panel sekaligus menghapus berkasnya dari disk,
+supaya folder unggahan tidak menumpuk sampah.
+
+**Catatan skalabilitas:** penyimpanan lokal ini pas untuk uji dan satu server.
+Untuk produksi, arah yang sudah disiapkan: unggah ke R2/Bunny, lalu ganti
+`local:<id>` dengan URL objek dan buat tautan bertanda tangan dari penyedianya
+(R2 presigned URL / Bunny token auth). Pemutar tidak perlu diubah.
+
 **Kalau video tidak muncul:** YouTube menampilkan “Playback on other websites
 has been disabled”. Itu keputusan kanal pemiliknya, bukan kesalahan aplikasi —
 beberapa video pada kanal yang sama mengizinkan semat, sebagian tidak. Pilihan

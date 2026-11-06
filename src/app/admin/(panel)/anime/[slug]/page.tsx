@@ -13,6 +13,12 @@ export const dynamic = "force-dynamic";
 /** Pesan untuk penolakan penambahan server (lihat addServerAction). */
 const SERVER_ERRORS: Record<string, string> = {
   "url-kosong": "URL server wajib diisi.",
+  "berkas-kosong": "Pilih berkas dulu sebelum menekan Unggah.",
+  "berkas-jenis":
+    "Jenis berkas tidak didukung. Video: mp4, m4v, webm, ogv, mov. Subtitle: vtt, srt, ass.",
+  "berkas-terlalu-besar":
+    "Berkas terlalu besar. Batas diatur lewat CAPTNIME_UPLOAD_MAX_MB (default 512 MB).",
+  "berkas-gagal": "Berkas gagal disimpan. Periksa izin tulis folder unggahan di server.",
   "episode-tidak-valid":
     "Episode tidak ditemukan pada judul ini — mungkin sudah dihapus di tab lain. Muat ulang halaman lalu coba lagi.",
   "jenis-server": "Jenis server tidak dikenal. Pilih hls, mp4, atau embed.",
@@ -66,6 +72,12 @@ export default async function AdminAnimePage({
       </div>
 
       {synced ? <Notice tone="ok">Jadwal tayang diperbarui dari AniList.</Notice> : null}
+      {flag("unggah") === "ok" ? (
+        <Notice tone="ok">
+          Berkas tersimpan. Video muncul sebagai server mp4, subtitle sebagai track Indonesia
+          (default) — tautan putarnya kedaluwarsa 6 jam; muat ulang halaman tonton bila lewat.
+        </Notice>
+      ) : null}
       {SERVER_ERRORS[syncError ?? ""] ? (
         <Notice tone="error">{SERVER_ERRORS[syncError as string]}</Notice>
       ) : null}

@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Server action membawa berkas unggahan; batas bawaan Next hanya 1 MB.
+  // Samakan dengan CAPTNIME_UPLOAD_MAX_MB (default 512 MB).
+  experimental: {
+    serverActions: { bodySizeLimit: "512mb" },
+  },
   poweredByHeader: false,
   // Build produksi memakai folder cache terpisah (.next-build) agar tidak
   // merusak cache `next dev` saat keduanya dijalankan di mesin yang sama.

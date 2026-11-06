@@ -1,6 +1,14 @@
 "use server";
 
 import { normalizeEmbedUrl } from "@/lib/media";
+import {
+  UploadError,
+  deleteUpload,
+  localMediaId,
+  maxUploadMb,
+  saveUpload,
+  uploadKindOf,
+} from "@/lib/storage";
 import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -338,9 +346,69 @@ export async function addServerAction(formData: FormData) {
 export async function deleteServerAction(formData: FormData) {
   await requireAdmin();
   const slug = str(formData, "animeSlug");
-  deleteServer(num(formData, "serverId", 0));
+  const id = num(formData, "serverId", 0);
+  const url = str(formData, "serverUrl");
+  deleteServer(id);
+  // Berkas unggahan tidak perlu disimpan lagi setelah barisnya hilang.
+  const uploadId = localMediaId(url);
+  if (uploadId) await deleteUpload(uploadId);
   refresh(slug);
   redirect(`/admin/anime/${slug}#episode`);
+}
+
+/**
+ * Unggah berkas dari panel: video (mp4/webm/mov/ogv) atau subtitle
+ * (vtt/srt/ass).
+ *
+ * Berkas disimpan di luar `public/` sebagai `local:<id>`; pemutar menerima
+ * tautan bertanda tangan yang kedaluwarsa 6 jam. Jenis berkas ditentukan dari
+ * ekstensinya — ekstensi di luar daftar ditolak, begitu juga berkas kosong dan
+ * berkas melebihi `CAPTNIME_UPLOAD_MAX_MB`.
+ */
+export async function uploadFileAction(formData: FormData) {
+  await requireAdmin();
+  const slug = str(formData, "animeSlug");
+  const fail = (code: string): never =>
+    redirect(`/admin/anime/${slug}?error=${code}#episode`);
+
+  const episodeId = num(formData, "episodeId", 0);
+  const record = getAdminAnime(slug);
+  if (!record || !record.episodeRows.some((e) => e.dbId === episodeId)) {
+    fail("episode-tidak-valid");
+  }
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || !file.name) fail("berkas-kosong");
+  const upload = file as File;
+  if (!uploadKindOf(upload.name)) fail("berkas-jenis");
+  if (upload.size > maxUploadMb() * 1024 * 1024) fail("berkas-terlalu-besar");
+
+  const saved = await saveUpload(upload).catch((error: unknown) => {
+    const code = error instanceof UploadError ? error.code : "berkas-gagal";
+    return fail(code);
+  });
+
+  if (uploadKindOf(upload.name) === "subtitle") {
+    addSubtitle({
+      episodeId,
+      lang: str(formData, "lang", "id"),
+      label: str(formData, "label", saved.filename),
+      src: saved.url,
+      isDefault: true,
+    });
+  } else {
+    addServer({
+      episodeId,
+      label: str(formData, "label", saved.filename),
+      type: "mp4",
+      url: saved.url,
+      quality: str(formData, "quality", "auto"),
+      note: `Berkas unggahan · ${(saved.size / (1024 * 1024)).toFixed(1)} MB`,
+    });
+  }
+
+  refresh(slug);
+  redirect(`/admin/anime/${slug}?unggah=ok#episode`);
 }
 
 export async function addSubtitleAction(formData: FormData) {
@@ -367,6 +435,8 @@ export async function deleteSubtitleAction(formData: FormData) {
   await requireAdmin();
   const slug = str(formData, "animeSlug");
   deleteSubtitle(num(formData, "subtitleId", 0));
+  const uploadId = localMediaId(str(formData, "subtitleSrc"));
+  if (uploadId) await deleteUpload(uploadId);
   refresh(slug);
   redirect(`/admin/anime/${slug}#episode`);
 }

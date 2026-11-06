@@ -7,7 +7,7 @@ import { EpisodeListConnected } from "@/components/episode-list-connected";
 import { Poster } from "@/components/poster";
 import { WatchlistButton } from "@/components/watchlist-button";
 import { getProvider } from "@/lib/provider";
-import { prepareServers } from "@/lib/media";
+import { prepareServers, prepareSubtitles } from "@/lib/media";
 import { formatDate, formatMinutes, padEpisode } from "@/lib/utils";
 
 export const revalidate = 300;
@@ -65,7 +65,11 @@ export default async function WatchPage({ params, searchParams }: PageProps) {
         <div className="min-w-0">
           <VideoPlayer
             anime={anime}
-            episode={{ ...episode, servers: prepareServers(episode.servers) }}
+            episode={{
+              ...episode,
+              servers: prepareServers(episode.servers),
+              subtitles: prepareSubtitles(episode.subtitles),
+            }}
             initialServerIndex={initialServerIndex}
             nextEpisode={next}
             nextHref={next ? `/watch/${anime.slug}/${next.number}` : undefined}
