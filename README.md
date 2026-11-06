@@ -52,7 +52,7 @@ Tidak perlu konfigurasi apa pun — katalog demo sudah terisi.
 | **Pemutar** | HLS (hls.js) & MP4, pilih server, subtitle Indonesia/Inggris on-off, resume dari posisi terakhir, auto-next dengan hitungan, kecepatan 0.75×–2×, PiP, layar penuh, pintasan keyboard, penanganan error + tombol ganti server. |
 | **Jadwal** | Jadwal rilis mingguan, hari ini disorot otomatis. |
 | **Daftar Saya** | Watchlist + riwayat tontonan. Tamu: `localStorage`. Login: tabel `progress`/`watchlist`, tersinkron antar perangkat. |
-| **Akun** | `/masuk`, `/daftar`, `/akun`. Kata sandi scrypt + salt, sesi cookie `httpOnly` bertanda token acak (yang disimpan hanya hash-nya), pembatasan 6 percobaan gagal/15 menit, data tamu disalin otomatis saat pertama masuk. Lihat [`docs/AUTENTIKASI.md`](docs/AUTENTIKASI.md). |
+| **Akun** | `/masuk`, `/daftar`, `/akun`, `/lupa-sandi`. Kata sandi scrypt + salt, sesi cookie `httpOnly` (yang disimpan hanya hash token), pembatasan 6 percobaan gagal/15 menit, data tamu disalin otomatis saat pertama masuk. Self-service: **ganti sandi**, **kode pemulihan sekali pakai** (reset tanpa email), **keluarkan perangkat lain**, dan **hapus akun** (data ikut terhapus). Lihat [`docs/AUTENTIKASI.md`](docs/AUTENTIKASI.md). |
 | **Panel admin** | `/admin`: login berbasis password env, CRUD judul, episode, server streaming, dan subtitle, plus **impor metadata dari AniList**. Perubahan langsung tayang lewat revalidasi — tanpa deploy ulang. Lihat [`docs/DATABASE.md`](docs/DATABASE.md) & [`docs/METADATA.md`](docs/METADATA.md). |
 | **UX** | Mobile-first, bottom tab bar, drawer menu, skeleton loading, halaman 404, `prefers-reduced-motion`, fokus keyboard, aria-label, metadata SEO + sitemap + PWA manifest. |
 
@@ -273,8 +273,9 @@ adapter-nya dipasang di sisi server Anda melalui `RemoteProvider`.
    riwayat & daftar tonton).
 3. **Penyempurnaan katalog** — jadwal tayang otomatis dari metadata, penerjemahan
    genre ke bahasa Indonesia, dan penandaan judul yang punya embed resmi.
-4. **Penyempurnaan akun** — verifikasi email, reset/ganti kata sandi, hapus akun,
-   opsional OAuth. Lihat batasan di `docs/AUTENTIKASI.md`.
+4. **Penyempurnaan akun** — *sebagian*: ganti sandi, kode pemulihan, keluarkan
+   perangkat lain, dan hapus akun sudah ada. Sisa: verifikasi email, reset lewat
+   email, dan opsional OAuth (lihat `docs/AUTENTIKASI.md`).
 5. **Hosting video** — *sebagian*: tiga jalur sumber (embed, HLS/MP4 eksternal,
    CDN base) sudah ada. Berikutnya: unggah dari panel, FFmpeg pipeline terpisah,
    signed URL/anti-hotlink bila konten berlisensi sudah tersedia (`docs/VIDEO.md`).

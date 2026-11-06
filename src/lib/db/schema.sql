@@ -108,6 +108,8 @@ CREATE TABLE IF NOT EXISTS users (
   email          TEXT NOT NULL UNIQUE,   -- selalu huruf kecil
   name           TEXT NOT NULL,
   password_hash  TEXT NOT NULL,
+  -- hash scrypt kode pemulihan (bukan kodenya). NULL = belum dibuat.
+  recovery_hash  TEXT,
   created_at     TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

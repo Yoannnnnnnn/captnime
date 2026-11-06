@@ -71,6 +71,33 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export type AuthFieldError = "email" | "password" | "name" | "exists" | "invalid";
 
+/* ------------------------------------------------------------------ */
+/* Kode pemulihan (reset kata sandi tanpa email)                       */
+/* ------------------------------------------------------------------ */
+
+// Tanpa I/O/0/1 agar tidak salah baca saat ditulis di kertas.
+const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+export function generateRecoveryCode(): string {
+  const bytes = crypto.randomBytes(12);
+  const chars = Array.from(bytes, (byte) => CODE_ALPHABET[byte % CODE_ALPHABET.length]).join("");
+  return `CPT-${chars.slice(0, 4)}-${chars.slice(4, 8)}-${chars.slice(8, 12)}`;
+}
+
+/** Buang spasi/tanda hubung & samakan huruf besar sebelum di-hash. */
+export function normalizeRecoveryCode(input: string): string {
+  return input.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+export function hashRecoveryCode(code: string): string {
+  return hashPassword(normalizeRecoveryCode(code));
+}
+
+export function verifyRecoveryCode(code: string, stored: string | null): boolean {
+  if (!stored) return false;
+  return verifyPassword(normalizeRecoveryCode(code), stored);
+}
+
 export function validateRegistration(input: {
   email: string;
   name: string;

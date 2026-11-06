@@ -29,6 +29,7 @@ export default async function LoginPage({
   };
   const next = one("next") ?? "/akun";
   const error = one("error");
+  const justReset = one("reset") === "1";
 
   if (await getCurrentUser()) redirect(next);
 
@@ -59,7 +60,15 @@ export default async function LoginPage({
           </label>
 
           <label className="block space-y-1.5">
-            <span className={labelClass}>Kata sandi</span>
+            <span className="flex items-baseline justify-between">
+              <span className={labelClass}>Kata sandi</span>
+              <Link
+                href="/lupa-sandi"
+                className="text-[11px] text-text-3 underline-offset-4 hover:text-gold hover:underline"
+              >
+                Lupa kata sandi?
+              </Link>
+            </span>
             <input
               type="password"
               name="password"
@@ -69,6 +78,15 @@ export default async function LoginPage({
               placeholder="••••••••"
             />
           </label>
+
+          {justReset ? (
+            <p
+              role="status"
+              className="rounded-md border border-mint/40 bg-mint/10 px-3 py-2 text-[12.5px] text-mint"
+            >
+              Kata sandi berhasil diperbarui. Silakan masuk dengan sandi baru.
+            </p>
+          ) : null}
 
           {error && ERRORS[error] ? (
             <p role="alert" className="rounded-md border border-coral/40 bg-coral/10 px-3 py-2 text-[12.5px] text-coral">

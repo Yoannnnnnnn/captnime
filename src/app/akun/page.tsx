@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bookmark, Clock3, LogOut, ShieldCheck } from "lucide-react";
-import { logoutAction } from "@/app/auth-actions";
+import { Bookmark, Clock3, KeyRound, LogOut, ShieldCheck } from "lucide-react";
+import { cookies } from "next/headers";
+import {
+  changePasswordAction,
+  createRecoveryCodeAction,
+  deleteAccountAction,
+  dismissRecoveryCodeAction,
+  logoutAction,
+  logoutOthersAction,
+} from "@/app/auth-actions";
 import { requireUser } from "@/lib/auth-user";
 import {
   accountStats,
@@ -10,7 +18,16 @@ import {
 } from "@/lib/db/accounts";
 import { getProvider } from "@/lib/provider";
 import { formatDate, padEpisode, timeAgo } from "@/lib/utils";
-import { Badge, btnGhost, btnPrimary } from "@/components/admin/ui";
+import {
+  Badge,
+  Notice,
+  btnDanger,
+  btnGhost,
+  btnPrimary,
+  inputClass,
+  labelClass,
+} from "@/components/admin/ui";
+
 
 export const metadata: Metadata = {
   title: "Akun Saya",
@@ -19,8 +36,29 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function AccountPage() {
+const NOTICES: Record<string, { tone: "ok" | "error"; text: string }> = {
+  "sandi=1": { tone: "ok", text: "Kata sandi berhasil diperbarui." },
+  "keluar=1": { tone: "ok", text: "Semua perangkat lain sudah dikeluarkan." },
+  "error=sandi-lama": { tone: "error", text: "Kata sandi saat ini salah." },
+  "error=sandi-pendek": { tone: "error", text: "Kata sandi baru minimal 8 karakter." },
+  "error=sandi-beda": { tone: "error", text: "Konfirmasi kata sandi tidak cocok." },
+  "error=hapus-sandi": { tone: "error", text: "Kata sandi salah — akun tidak dihapus." },
+  "error=hapus-teks": { tone: "error", text: "Ketik HAPUS (huruf besar) untuk konfirmasi." },
+};
+
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const one = (key: string) => {
+    const v = sp[key];
+    return Array.isArray(v) ? v[0] : v;
+  };
+
   const user = await requireUser("/akun");
+  const recoveryCode = (await cookies()).get("captnime_recovery_code")?.value ?? null;
   const stats = accountStats(user.id);
   const [progress, watchlist] = [
     listProgress(user.id, 5),
@@ -33,6 +71,12 @@ export default async function AccountPage() {
   );
   const found = await Promise.all(slugs.map((slug) => provider.getBySlug(slug)));
   const titles = new Map(found.filter(Boolean).map((a) => [a!.slug, a!.title]));
+
+  const noticeKey = Object.keys(NOTICES).find((key) => {
+    const [param, value] = key.split("=");
+    return one(param) === value;
+  });
+  const notice = noticeKey ? NOTICES[noticeKey] : null;
 
   return (
     <div className="container-page pb-16 pt-16 lg:pt-7">
@@ -48,6 +92,8 @@ export default async function AccountPage() {
           yang memakai akun yang sama.
         </p>
       </header>
+
+      {notice ? <div className="mb-4"><Notice tone={notice.tone}>{notice.text}</Notice></div> : null}
 
       <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr]">
         {/* --- profil --- */}
@@ -180,6 +226,149 @@ export default async function AccountPage() {
           </section>
         </div>
       </div>
+
+      {/* ================= Keamanan akun ================= */}
+      <section id="keamanan" className="mt-6 grid gap-4 lg:grid-cols-2">
+        <div className="sticker p-5">
+          <h2 className="text-sm font-semibold tracking-tight text-text">
+            Ganti kata sandi
+          </h2>
+          <p className="mt-0.5 text-[12px] leading-relaxed text-text-3">
+            Perlu kata sandi saat ini. Sesi di peramban lain tetap aktif — keluarkan
+            terpisah bila perlu.
+          </p>
+
+          <form action={changePasswordAction} className="mt-3 space-y-3">
+            <label className="block space-y-1.5">
+              <span className={labelClass}>Kata sandi saat ini</span>
+              <input
+                type="password"
+                name="current"
+                required
+                autoComplete="current-password"
+                className={inputClass}
+              />
+            </label>
+            <label className="block space-y-1.5">
+              <span className={labelClass}>Kata sandi baru</span>
+              <input
+                type="password"
+                name="password"
+                required
+                minLength={8}
+                autoComplete="new-password"
+                className={inputClass}
+              />
+            </label>
+            <label className="block space-y-1.5">
+              <span className={labelClass}>Ulangi kata sandi baru</span>
+              <input
+                type="password"
+                name="confirm"
+                required
+                minLength={8}
+                autoComplete="new-password"
+                className={inputClass}
+              />
+            </label>
+            <button type="submit" className={btnPrimary}>
+              Simpan kata sandi
+            </button>
+          </form>
+
+          <form action={logoutOthersAction} className="mt-4 border-t border-line pt-3">
+            <button type="submit" className={btnGhost}>
+              <LogOut className="size-3.5" aria-hidden />
+              Keluarkan semua perangkat lain
+            </button>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-text-3">
+              Berguna bila Anda pernah masuk di komputer atau ponsel orang lain.
+            </p>
+          </form>
+        </div>
+
+        <div className="space-y-4">
+          <div className="sticker p-5">
+            <h2 className="text-sm font-semibold tracking-tight text-text">
+              Lupa kata sandi nanti?
+            </h2>
+            <p className="mt-0.5 text-[12px] leading-relaxed text-text-3">
+              Aplikasi ini belum memakai email transaksional, jadi reset memakai kode
+              pemulihan sekali pakai.
+            </p>
+            <div className="mt-3">
+              {recoveryCode ? (
+                <div className="rounded-md border border-mint/40 bg-mint/10 p-3">
+                  <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-mint">
+                    <ShieldCheck className="size-3.5" aria-hidden />
+                    Simpan sekarang — hanya tampil sekali
+                  </p>
+                  <code className="mt-1.5 block select-all font-mono text-[14px] tracking-wider text-text">
+                    {recoveryCode}
+                  </code>
+                  <p className="mt-1.5 text-[11px] leading-relaxed text-text-3">
+                    Setelah ditutup, kode tidak bisa ditampilkan lagi. Kalau hilang,
+                    buat kode baru.
+                  </p>
+                  <form action={dismissRecoveryCodeAction} className="mt-2.5">
+                    <button type="submit" className={btnGhost}>
+                      Sudah saya simpan
+                    </button>
+                  </form>
+                </div>
+              ) : (
+                <div className="rounded-md border border-line bg-surface-2/60 p-3">
+                  <p className="text-[11.5px] leading-relaxed text-text-3">
+                    Kode hanya ditampilkan sekali saat dibuat. Membuat kode baru
+                    membatalkan kode lama.
+                  </p>
+                  <form action={createRecoveryCodeAction} className="mt-2.5">
+                    <button type="submit" className={btnGhost}>
+                      <KeyRound className="size-3.5" aria-hidden />
+                      Buat kode pemulihan
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-coral/30 bg-coral/5 p-5">
+            <h2 className="text-sm font-semibold tracking-tight text-coral">
+              Hapus akun
+            </h2>
+            <p className="mt-0.5 text-[12px] leading-relaxed text-text-3">
+              Menghapus akun sekaligus menghapus riwayat tontonan dan daftar tonton.
+              Tindakan ini tidak bisa dibatalkan.
+            </p>
+
+            <form action={deleteAccountAction} className="mt-3 space-y-3">
+              <label className="block space-y-1.5">
+                <span className={labelClass}>Kata sandi</span>
+                <input
+                  type="password"
+                  name="password"
+                  required
+                  autoComplete="current-password"
+                  className={inputClass}
+                />
+              </label>
+              <label className="block space-y-1.5">
+                <span className={labelClass}>Ketik HAPUS untuk konfirmasi</span>
+                <input
+                  name="confirmation"
+                  required
+                  placeholder="HAPUS"
+                  className={inputClass}
+                />
+              </label>
+              <button type="submit" className={btnDanger}>
+                Hapus akun permanen
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

@@ -65,13 +65,17 @@ export function dbLocation(): string {
  * perubahan skema aditif perlu ditangani di sini.
  */
 function migrate(db: DatabaseSync): void {
-  const columns = db.prepare("PRAGMA table_info(anime)").all() as unknown as Array<{
-    name: string;
-  }>;
-  const has = (name: string) => columns.some((column) => column.name === name);
+  const columnsOf = (table: string) =>
+    db.prepare(`PRAGMA table_info(${table})`).all() as unknown as Array<{ name: string }>;
 
-  if (!has("anilist_id")) {
+  const animeColumns = columnsOf("anime");
+  if (!animeColumns.some((c) => c.name === "anilist_id")) {
     db.exec("ALTER TABLE anime ADD COLUMN anilist_id INTEGER");
+  }
+
+  const userColumns = columnsOf("users");
+  if (!userColumns.some((c) => c.name === "recovery_hash")) {
+    db.exec("ALTER TABLE users ADD COLUMN recovery_hash TEXT");
   }
 }
 

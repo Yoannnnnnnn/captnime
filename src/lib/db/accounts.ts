@@ -12,6 +12,7 @@ export interface UserRow {
   email: string;
   name: string;
   password_hash: string;
+  recovery_hash: string | null;
   created_at: string;
 }
 
@@ -99,6 +100,20 @@ export function emailExists(email: string): boolean {
   return Boolean(findUserByEmail(email));
 }
 
+export function setPasswordHash(userId: string, hash: string): void {
+  getDb().prepare(`UPDATE users SET password_hash = ? WHERE id = ?`).run(hash, userId);
+}
+
+/** `null` menghapus kode pemulihan (dipakai setelah kode dipakai). */
+export function setRecoveryHash(userId: string, hash: string | null): void {
+  getDb().prepare(`UPDATE users SET recovery_hash = ? WHERE id = ?`).run(hash, userId);
+}
+
+export function deleteUser(userId: string): void {
+  // sessions/progress/watchlist ikut terhapus lewat ON DELETE CASCADE.
+  getDb().prepare(`DELETE FROM users WHERE id = ?`).run(userId);
+}
+
 export function countUsers(): number {
   return (
     getDb().prepare(`SELECT COUNT(*) AS total FROM users`).get() as {
@@ -142,6 +157,13 @@ export function deleteSession(tokenHash: string): void {
 
 export function deleteUserSessions(userId: string): void {
   getDb().prepare(`DELETE FROM sessions WHERE user_id = ?`).run(userId);
+}
+
+/** Keluarkan semua perangkat lain, sesi saat ini tetap hidup. */
+export function deleteOtherSessions(userId: string, keepTokenHash: string): void {
+  getDb()
+    .prepare(`DELETE FROM sessions WHERE user_id = ? AND token_hash <> ?`)
+    .run(userId, keepTokenHash);
 }
 
 export function purgeExpiredSessions(): void {
