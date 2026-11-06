@@ -1,5 +1,14 @@
 "use server";
 
+import { normalizeEmbedUrl } from "@/lib/media";
+import {
+  UploadError,
+  deleteUpload,
+  localMediaId,
+  maxUploadMb,
+  saveUpload,
+  uploadKindOf,
+} from "@/lib/storage";
 import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -7,6 +16,7 @@ import {
   addServer,
   addSubtitle,
   createOrUpdateAnime,
+  getAdminAnime,
   deleteAnime,
   deleteEpisode,
   deleteServer,
@@ -274,16 +284,60 @@ export async function deleteEpisodeAction(formData: FormData) {
 /* Server streaming & subtitle                                        */
 /* ------------------------------------------------------------------ */
 
+const SERVER_TYPES = new Set(["hls", "mp4", "embed"]);
+
+/**
+ * Tambah server streaming.
+ *
+ * URL divalidasi di server (bukan hanya di form): tipe embed harus lolos
+ * allowlist `normalizeEmbedUrl()` dan disimpan dalam bentuk ternormalkan,
+ * sedangkan tipe hls wajib menunjuk manifest .m3u8. Tanpa ini, salah tempel
+ * baru ketahuan saat penonton membuka episode — dan pemutar menampilkan
+ * "sumber embed tidak dikenali" tanpa petunjuk apa yang salah.
+ */
 export async function addServerAction(formData: FormData) {
   await requireAdmin();
   const slug = str(formData, "animeSlug");
+  const fail = (code: string): never =>
+    redirect(`/admin/anime/${slug}?error=${code}#episode`);
+
+  const type = str(formData, "type", "hls").toLowerCase();
+  const rawUrl = str(formData, "url").trim();
+  const quality = str(formData, "quality", "auto");
+  const label = str(formData, "label", "Server");
+  const note = str(formData, "note") || undefined;
+
+  if (!SERVER_TYPES.has(type)) fail("jenis-server");
+  if (!rawUrl) fail("url-kosong");
+
+  // episodeId datang dari form, jadi bisa saja sudah basi (episode dihapus di
+  // tab lain). Tanpa pemeriksaan ini, insert gagal dengan FOREIGN KEY mentah
+  // dan pengguna hanya melihat halaman error 500.
+  const episodeId = num(formData, "episodeId", 0);
+  const record = getAdminAnime(slug);
+  if (!record || !record.episodeRows.some((e) => e.dbId === episodeId)) {
+    fail("episode-tidak-valid");
+  }
+
+  let url = rawUrl;
+  if (type === "embed") {
+    const normalized = normalizeEmbedUrl(rawUrl);
+    if (!normalized) fail("embed-tak-dikenal");
+    url = normalized as string;
+  } else if (type === "hls") {
+    if (!/\.m3u8(\?|$)/i.test(rawUrl)) fail("hls-bukan-m3u8");
+  } else {
+    // mp4: boleh path relatif (dipasangi CDN) atau URL absolut.
+    if (!/^(https?:\/\/|\/)/i.test(rawUrl)) fail("url-tidak-valid");
+  }
+
   addServer({
-    episodeId: num(formData, "episodeId", 0),
-    label: str(formData, "label", "Server"),
-    type: str(formData, "type", "hls"),
-    url: str(formData, "url"),
-    quality: str(formData, "quality", "auto"),
-    note: str(formData, "note") || undefined,
+    episodeId,
+    label,
+    type,
+    url,
+    quality,
+    note,
   });
   refresh(slug);
   redirect(`/admin/anime/${slug}#episode`);
@@ -292,16 +346,82 @@ export async function addServerAction(formData: FormData) {
 export async function deleteServerAction(formData: FormData) {
   await requireAdmin();
   const slug = str(formData, "animeSlug");
-  deleteServer(num(formData, "serverId", 0));
+  const id = num(formData, "serverId", 0);
+  const url = str(formData, "serverUrl");
+  deleteServer(id);
+  // Berkas unggahan tidak perlu disimpan lagi setelah barisnya hilang.
+  const uploadId = localMediaId(url);
+  if (uploadId) await deleteUpload(uploadId);
   refresh(slug);
   redirect(`/admin/anime/${slug}#episode`);
+}
+
+/**
+ * Unggah berkas dari panel: video (mp4/webm/mov/ogv) atau subtitle
+ * (vtt/srt/ass).
+ *
+ * Berkas disimpan di luar `public/` sebagai `local:<id>`; pemutar menerima
+ * tautan bertanda tangan yang kedaluwarsa 6 jam. Jenis berkas ditentukan dari
+ * ekstensinya — ekstensi di luar daftar ditolak, begitu juga berkas kosong dan
+ * berkas melebihi `CAPTNIME_UPLOAD_MAX_MB`.
+ */
+export async function uploadFileAction(formData: FormData) {
+  await requireAdmin();
+  const slug = str(formData, "animeSlug");
+  const fail = (code: string): never =>
+    redirect(`/admin/anime/${slug}?error=${code}#episode`);
+
+  const episodeId = num(formData, "episodeId", 0);
+  const record = getAdminAnime(slug);
+  if (!record || !record.episodeRows.some((e) => e.dbId === episodeId)) {
+    fail("episode-tidak-valid");
+  }
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || !file.name) fail("berkas-kosong");
+  const upload = file as File;
+  if (!uploadKindOf(upload.name)) fail("berkas-jenis");
+  if (upload.size > maxUploadMb() * 1024 * 1024) fail("berkas-terlalu-besar");
+
+  const saved = await saveUpload(upload).catch((error: unknown) => {
+    const code = error instanceof UploadError ? error.code : "berkas-gagal";
+    return fail(code);
+  });
+
+  if (uploadKindOf(upload.name) === "subtitle") {
+    addSubtitle({
+      episodeId,
+      lang: str(formData, "lang", "id"),
+      label: str(formData, "label", saved.filename),
+      src: saved.url,
+      isDefault: true,
+    });
+  } else {
+    addServer({
+      episodeId,
+      label: str(formData, "label", saved.filename),
+      type: "mp4",
+      url: saved.url,
+      quality: str(formData, "quality", "auto"),
+      note: `Berkas unggahan · ${(saved.size / (1024 * 1024)).toFixed(1)} MB`,
+    });
+  }
+
+  refresh(slug);
+  redirect(`/admin/anime/${slug}?unggah=ok#episode`);
 }
 
 export async function addSubtitleAction(formData: FormData) {
   await requireAdmin();
   const slug = str(formData, "animeSlug");
+  const episodeId = num(formData, "episodeId", 0);
+  const record = getAdminAnime(slug);
+  if (!record || !record.episodeRows.some((e) => e.dbId === episodeId)) {
+    redirect(`/admin/anime/${slug}?error=episode-tidak-valid#episode`);
+  }
+
   addSubtitle({
-    episodeId: num(formData, "episodeId", 0),
+    episodeId,
     lang: str(formData, "lang", "id"),
     label: str(formData, "label", "Indonesia"),
     src: str(formData, "src"),
@@ -315,6 +435,8 @@ export async function deleteSubtitleAction(formData: FormData) {
   await requireAdmin();
   const slug = str(formData, "animeSlug");
   deleteSubtitle(num(formData, "subtitleId", 0));
+  const uploadId = localMediaId(str(formData, "subtitleSrc"));
+  if (uploadId) await deleteUpload(uploadId);
   refresh(slug);
   redirect(`/admin/anime/${slug}#episode`);
 }

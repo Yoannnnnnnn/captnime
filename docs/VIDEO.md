@@ -75,6 +75,112 @@ menang untuk video: 1 TB ditonton per bulan tetap $0 biaya keluar.
 5. **Riwayat untuk embed** — karena platform pihak ketiga tidak memberi posisi,
    pembukaan episode dicatat sebagai “sedang ditonton” agar muncul di
    Lanjut Tonton. Progres persennya tidak dilacak.
+6. **Validasi di server, bukan hanya di form** — `addServerAction` menolak
+   tipe yang tidak dikenal, URL kosong, embed di luar allowlist, dan server
+   `hls` yang tidak menunjuk `.m3u8`. URL embed disimpan dalam bentuk
+   ternormalkan, sehingga yang tersimpan di database selalu bentuk semat yang
+   sah. Alasannya praktis: salah tempel dulu baru ketahuan saat penonton
+   membuka episode.
+7. **Atribusi sumber embed** — di bawah pemutar tertulis platform pemiliknya
+   (“Diputar langsung oleh YouTube”) dan tautan **Buka di tab baru** ke halaman
+   aslinya. Ini jalan keluar ketika sebuah kanal resmi menonaktifkan opsi semat,
+   tanpa perlu menyalurkan ulang videonya.
+
+### Uji putar cepat dengan embed resmi
+
+Ini cara tercepat melihat pemutar bekerja dengan video sungguhan, memakai
+konten yang pemiliknya sendiri mempublikasikan di platform yang mengizinkan
+semat (mis. kanal resmi Ani-One Asia atau Muse Asia).
+
+1. Pastikan `CAPTNIME_DATA_SOURCE=database` — panel admin dan situs harus
+   membaca database yang sama.
+2. Buka `/admin/login`, lalu pilih satu judul dan buka salah satu episodenya.
+3. Di bagian **Server**, isi: label `YouTube Resmi`, tipe **`embed`**, dan tempel
+   **tautan halaman tonton** (bukan kode semat), mis.
+   `https://www.youtube.com/watch?v=VIDEOID`.
+4. Simpan, lalu buka `/watch/<slug>/<episode>`.
+
+Yang seharusnya terlihat: iframe pemutar, keterangan “Diputar langsung oleh
+YouTube — subtitle dan kualitas diatur lewat tombol di dalam pemutar”, dan
+tautan “Buka di tab baru”.
+
+Bentuk URL di database setelah disimpan (normalisasi otomatis):
+
+| Anda menempel | Tersimpan sebagai |
+| --- | --- |
+| `https://youtu.be/VIDEOID` | `https://www.youtube-nocookie.com/embed/VIDEOID?rel=0` |
+| `https://www.youtube.com/watch?v=VIDEOID` | sama seperti di atas |
+| `https://vimeo.com/123456` | `https://player.vimeo.com/video/123456` |
+| `https://www.bilibili.com/video/BVxxxx` | `https://player.bilibili.com/player.html?bvid=BVxxxx&high_quality=1` |
+
+Tautan langsung ke server tertentu: tambahkan `?server=N` (1-based) pada URL
+tonton, mis. `/watch/akuarium-kota-tua/1?server=4`. Berguna untuk membagikan
+tautan yang langsung memakai sumber resmi, dan membuat perilaku embed bisa
+diuji otomatis tanpa mengeklik.
+
+## Unggah berkas & tautan bertanda tangan
+
+Panel admin punya formulir **Unggah berkas** di tiap episode (di bawah “Tambah
+server”). Jenis berkas ditentukan dari ekstensinya:
+
+| Ekstensi | Hasil |
+| --- | --- |
+| `.mp4` `.m4v` `.webm` `.ogv` `.mov` | server mp4 baru pada episode itu |
+| `.vtt` `.srt` `.ass` | subtitle baru (`lang=id`, default aktif) |
+| lainnya | ditolak: `?error=berkas-jenis` |
+
+Berkas disimpan **di luar `public/`** (default `data/uploads/`, ubah lewat
+`CAPTNIME_UPLOAD_DIR`) dengan nama acak, dan database hanya menyimpan penanda
+`local:<id>`. Saat halaman tonton dirender, penanda itu diubah menjadi
+
+```
+/media/<id>?exp=<epoch-ms>&sig=<hmac-sha256(id:exp)>
+```
+
+yang **kedaluwarsa 6 jam** (`SIGNED_TTL_MS`). Tanpa tanda tangan yang sah route
+`/media/[file]` menjawab `403`, dan berkas yang tidak ada menjawab `404` — jadi
+menyalin tautan lalu menyimpannya untuk dipakai besok tidak berhasil. Route itu
+mendukung `Range` (`206 Partial Content`) sehingga pemutar bisa melompat ke
+tengah video.
+
+Batas dan rahasia:
+
+| Env | Arti |
+| --- | --- |
+| `CAPTNIME_UPLOAD_DIR` | folder simpan (default `data/uploads`) |
+| `CAPTNIME_UPLOAD_MAX_MB` | batas ukuran per berkas (default 512) |
+| `CAPTNIME_MEDIA_SECRET` | secret HMAC tautan; kosong → turunan `CAPTNIME_ADMIN_SECRET`/`CAPTNIME_ADMIN_PASSWORD` |
+
+`next.config.ts` menaikkan `experimental.serverActions.bodySizeLimit` ke `512mb`
+karena batas bawaan server action hanya 1 MB; kalau Anda menaikkan
+`CAPTNIME_UPLOAD_MAX_MB` melebihi 512, naikkan juga nilai itu.
+
+Menghapus server/subtitle dari panel sekaligus menghapus berkasnya dari disk,
+supaya folder unggahan tidak menumpuk sampah.
+
+**Catatan skalabilitas:** penyimpanan lokal ini pas untuk uji dan satu server.
+Untuk produksi, arah yang sudah disiapkan: unggah ke R2/Bunny, lalu ganti
+`local:<id>` dengan URL objek dan buat tautan bertanda tangan dari penyedianya
+(R2 presigned URL / Bunny token auth). Pemutar tidak perlu diubah.
+
+**Kalau video tidak muncul:** YouTube menampilkan “Playback on other websites
+has been disabled”. Itu keputusan kanal pemiliknya, bukan kesalahan aplikasi —
+beberapa video pada kanal yang sama mengizinkan semat, sebagian tidak. Pilihan
+yang sah: coba video lain dari kanal resmi itu, atau pakai “Buka di tab baru”.
+Yang **tidak** boleh: mengunduh lalu menyalurkan ulang videonya.
+
+Kemungkinan lain: pembatasan wilayah (kanal resmi Asia Tenggara umumnya aman
+dibuka dari Indonesia) atau video sudah dihapus/diprivatkan.
+
+Penolakan yang muncul di panel admin beserta artinya:
+
+| Kode | Arti |
+| --- | --- |
+| `url-kosong` | URL belum diisi |
+| `jenis-server` | Tipe bukan hls/mp4/embed |
+| `embed-tak-dikenal` | Host di luar allowlist, atau yang ditempel kode semat `<iframe>` |
+| `hls-bukan-m3u8` | Tipe `hls` tetapi URL tidak menunjuk `.m3u8` |
+| `url-tidak-valid` | Tipe `mp4` tetapi URL bukan http(s) dan bukan path `/…` |
 
 ### Yang belum ada (sengaja)
 

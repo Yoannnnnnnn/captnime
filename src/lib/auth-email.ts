@@ -11,6 +11,7 @@ import {
 } from "@/lib/auth-user";
 import {
   absoluteUrl,
+  emailConfigStatus,
   resetEmail,
   sendEmail,
   verificationEmail,
@@ -30,6 +31,13 @@ async function issue(input: {
   ttlMs: number;
   path: string;
 }): Promise<EmailResult> {
+  // Kalau pengiriman email belum siap, jangan buat token: tanpa email ia tidak
+  // akan pernah sampai, dan baris `email_tokens` hanya menumpuk sebagai sampah.
+  const status = emailConfigStatus();
+  if (!status.ok) {
+    return { ok: false, skipped: true, error: `belum-dikonfigurasi:${status.problem}` };
+  }
+
   const token = generateEmailToken();
   createEmailToken({
     tokenHash: hashEmailToken(token),

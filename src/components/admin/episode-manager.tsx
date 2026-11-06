@@ -7,6 +7,7 @@ import {
   deleteServerAction,
   deleteSubtitleAction,
   saveEpisodeAction,
+  uploadFileAction,
 } from "@/app/admin/actions";
 import { Badge, Field, Panel, btnDanger, btnGhost, btnPrimary, inputClass } from "@/components/admin/ui";
 import { formatDuration, padEpisode } from "@/lib/utils";
@@ -130,6 +131,7 @@ function EpisodeBlock({ slug, episode }: { slug: string; episode: AdminEpisodeRo
                     <form action={deleteServerAction}>
                       <input type="hidden" name="animeSlug" value={slug} />
                       <input type="hidden" name="serverId" value={server.dbId} />
+                      <input type="hidden" name="serverUrl" value={server.url} />
                       <button
                         type="submit"
                         aria-label={`Hapus ${server.label}`}
@@ -185,6 +187,46 @@ function EpisodeBlock({ slug, episode }: { slug: string; episode: AdminEpisodeRo
                 Tambah server
               </button>
             </form>
+
+            <form
+              action={uploadFileAction}
+              encType="multipart/form-data"
+              className="space-y-2 rounded-md border border-dashed border-line bg-surface-2/60 p-2.5"
+            >
+              <input type="hidden" name="animeSlug" value={slug} />
+              <input type="hidden" name="episodeId" value={episode.dbId} />
+              <div className="grid gap-2 sm:grid-cols-3">
+                <Field label="Berkas video / subtitle">
+                  <input
+                    type="file"
+                    name="file"
+                    required
+                    accept=".mp4,.m4v,.webm,.ogv,.mov,.vtt,.srt,.ass"
+                    className={inputClass}
+                  />
+                </Field>
+                <Field label="Label">
+                  <input name="label" placeholder="dari nama berkas" className={inputClass} />
+                </Field>
+                <Field label="Kualitas (video)">
+                  <select name="quality" className={inputClass}>
+                    <option value="auto">auto</option>
+                    <option value="1080p">1080p</option>
+                    <option value="720p">720p</option>
+                    <option value="480p">480p</option>
+                  </select>
+                </Field>
+              </div>
+              <p className="text-[11px] leading-relaxed text-text-3">
+                Video → server mp4. Subtitle → subtitle Indonesia (default). Berkas
+                disimpan di luar folder publik dan hanya bisa diambil lewat tautan
+                bertanda tangan yang berlaku 6 jam.
+              </p>
+              <button type="submit" className={btnGhost}>
+                <Plus className="mr-1 inline size-3.5" aria-hidden />
+                Unggah berkas
+              </button>
+            </form>
           </div>
 
           <div>
@@ -209,6 +251,7 @@ function EpisodeBlock({ slug, episode }: { slug: string; episode: AdminEpisodeRo
                     <form action={deleteSubtitleAction}>
                       <input type="hidden" name="animeSlug" value={slug} />
                       <input type="hidden" name="subtitleId" value={sub.dbId} />
+                      <input type="hidden" name="subtitleSrc" value={sub.src} />
                       <button
                         type="submit"
                         aria-label={`Hapus subtitle ${sub.label}`}

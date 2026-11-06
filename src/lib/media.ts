@@ -1,4 +1,5 @@
-import type { StreamServer } from "@/lib/types";
+import type { StreamServer, Subtitle } from "@/lib/types";
+import { isLocalMedia, signMediaUrl } from "@/lib/storage";
 
 /**
  * Utilitas sumber video.
@@ -116,6 +117,18 @@ export function prepareServers(servers: StreamServer[]): StreamServer[] {
       const normalized = normalizeEmbedUrl(server.url);
       return normalized ? { ...server, url: normalized } : server;
     }
+    // Berkas unggahan memakai tautan bertanda tangan yang dibuat saat render,
+    // jadi tidak ikut dipasangi CDN (`CAPTNIME_MEDIA_BASE_URL`).
+    if (isLocalMedia(server.url)) {
+      return { ...server, url: signMediaUrl(server.url) };
+    }
     return { ...server, url: resolveMediaUrl(server.url) };
   });
+}
+
+/** Subtitle unggahan juga butuh tanda tangan; yang eksternal dibiarkan. */
+export function prepareSubtitles(subtitles: Subtitle[]): Subtitle[] {
+  return subtitles.map((subtitle) =>
+    isLocalMedia(subtitle.src) ? { ...subtitle, src: signMediaUrl(subtitle.src) } : subtitle,
+  );
 }
