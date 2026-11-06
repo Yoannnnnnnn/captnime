@@ -14,6 +14,7 @@ export const revalidate = 300;
 
 interface PageProps {
   params: Promise<{ slug: string; episode: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -26,8 +27,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function WatchPage({ params }: PageProps) {
+export default async function WatchPage({ params, searchParams }: PageProps) {
   const { slug, episode: episodeParam } = await params;
+  const sp = (await searchParams) ?? {};
   const episodeNumber = Number(episodeParam);
 
   if (!Number.isFinite(episodeNumber)) notFound();
@@ -38,6 +40,12 @@ export default async function WatchPage({ params }: PageProps) {
 
   const { anime, episode } = data;
   const index = anime.episodes.findIndex((e) => e.number === episode.number);
+
+  // ?server=2 memilih server kedua (1-based). Berguna untuk membagikan tautan
+  // yang langsung memakai sumber tertentu, dan membuat perilaku embed bisa
+  // diuji tanpa mengeklik.
+  const serverParam = Array.isArray(sp.server) ? sp.server[0] : sp.server;
+  const initialServerIndex = Math.max(0, (Number(serverParam) || 1) - 1);
   const prev = index > 0 ? anime.episodes[index - 1] : undefined;
   const next = index < anime.episodes.length - 1 ? anime.episodes[index + 1] : undefined;
 
@@ -58,6 +66,7 @@ export default async function WatchPage({ params }: PageProps) {
           <VideoPlayer
             anime={anime}
             episode={{ ...episode, servers: prepareServers(episode.servers) }}
+            initialServerIndex={initialServerIndex}
             nextEpisode={next}
             nextHref={next ? `/watch/${anime.slug}/${next.number}` : undefined}
           />

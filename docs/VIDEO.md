@@ -75,6 +75,67 @@ menang untuk video: 1 TB ditonton per bulan tetap $0 biaya keluar.
 5. **Riwayat untuk embed** — karena platform pihak ketiga tidak memberi posisi,
    pembukaan episode dicatat sebagai “sedang ditonton” agar muncul di
    Lanjut Tonton. Progres persennya tidak dilacak.
+6. **Validasi di server, bukan hanya di form** — `addServerAction` menolak
+   tipe yang tidak dikenal, URL kosong, embed di luar allowlist, dan server
+   `hls` yang tidak menunjuk `.m3u8`. URL embed disimpan dalam bentuk
+   ternormalkan, sehingga yang tersimpan di database selalu bentuk semat yang
+   sah. Alasannya praktis: salah tempel dulu baru ketahuan saat penonton
+   membuka episode.
+7. **Atribusi sumber embed** — di bawah pemutar tertulis platform pemiliknya
+   (“Diputar langsung oleh YouTube”) dan tautan **Buka di tab baru** ke halaman
+   aslinya. Ini jalan keluar ketika sebuah kanal resmi menonaktifkan opsi semat,
+   tanpa perlu menyalurkan ulang videonya.
+
+### Uji putar cepat dengan embed resmi
+
+Ini cara tercepat melihat pemutar bekerja dengan video sungguhan, memakai
+konten yang pemiliknya sendiri mempublikasikan di platform yang mengizinkan
+semat (mis. kanal resmi Ani-One Asia atau Muse Asia).
+
+1. Pastikan `CAPTNIME_DATA_SOURCE=database` — panel admin dan situs harus
+   membaca database yang sama.
+2. Buka `/admin/login`, lalu pilih satu judul dan buka salah satu episodenya.
+3. Di bagian **Server**, isi: label `YouTube Resmi`, tipe **`embed`**, dan tempel
+   **tautan halaman tonton** (bukan kode semat), mis.
+   `https://www.youtube.com/watch?v=VIDEOID`.
+4. Simpan, lalu buka `/watch/<slug>/<episode>`.
+
+Yang seharusnya terlihat: iframe pemutar, keterangan “Diputar langsung oleh
+YouTube — subtitle dan kualitas diatur lewat tombol di dalam pemutar”, dan
+tautan “Buka di tab baru”.
+
+Bentuk URL di database setelah disimpan (normalisasi otomatis):
+
+| Anda menempel | Tersimpan sebagai |
+| --- | --- |
+| `https://youtu.be/VIDEOID` | `https://www.youtube-nocookie.com/embed/VIDEOID?rel=0` |
+| `https://www.youtube.com/watch?v=VIDEOID` | sama seperti di atas |
+| `https://vimeo.com/123456` | `https://player.vimeo.com/video/123456` |
+| `https://www.bilibili.com/video/BVxxxx` | `https://player.bilibili.com/player.html?bvid=BVxxxx&high_quality=1` |
+
+Tautan langsung ke server tertentu: tambahkan `?server=N` (1-based) pada URL
+tonton, mis. `/watch/akuarium-kota-tua/1?server=4`. Berguna untuk membagikan
+tautan yang langsung memakai sumber resmi, dan membuat perilaku embed bisa
+diuji otomatis tanpa mengeklik.
+
+**Kalau video tidak muncul:** YouTube menampilkan “Playback on other websites
+has been disabled”. Itu keputusan kanal pemiliknya, bukan kesalahan aplikasi —
+beberapa video pada kanal yang sama mengizinkan semat, sebagian tidak. Pilihan
+yang sah: coba video lain dari kanal resmi itu, atau pakai “Buka di tab baru”.
+Yang **tidak** boleh: mengunduh lalu menyalurkan ulang videonya.
+
+Kemungkinan lain: pembatasan wilayah (kanal resmi Asia Tenggara umumnya aman
+dibuka dari Indonesia) atau video sudah dihapus/diprivatkan.
+
+Penolakan yang muncul di panel admin beserta artinya:
+
+| Kode | Arti |
+| --- | --- |
+| `url-kosong` | URL belum diisi |
+| `jenis-server` | Tipe bukan hls/mp4/embed |
+| `embed-tak-dikenal` | Host di luar allowlist, atau yang ditempel kode semat `<iframe>` |
+| `hls-bukan-m3u8` | Tipe `hls` tetapi URL tidak menunjuk `.m3u8` |
+| `url-tidak-valid` | Tipe `mp4` tetapi URL bukan http(s) dan bukan path `/…` |
 
 ### Yang belum ada (sengaja)
 

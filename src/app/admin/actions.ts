@@ -1,5 +1,6 @@
 "use server";
 
+import { normalizeEmbedUrl } from "@/lib/media";
 import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -7,6 +8,7 @@ import {
   addServer,
   addSubtitle,
   createOrUpdateAnime,
+  getAdminAnime,
   deleteAnime,
   deleteEpisode,
   deleteServer,
@@ -274,16 +276,60 @@ export async function deleteEpisodeAction(formData: FormData) {
 /* Server streaming & subtitle                                        */
 /* ------------------------------------------------------------------ */
 
+const SERVER_TYPES = new Set(["hls", "mp4", "embed"]);
+
+/**
+ * Tambah server streaming.
+ *
+ * URL divalidasi di server (bukan hanya di form): tipe embed harus lolos
+ * allowlist `normalizeEmbedUrl()` dan disimpan dalam bentuk ternormalkan,
+ * sedangkan tipe hls wajib menunjuk manifest .m3u8. Tanpa ini, salah tempel
+ * baru ketahuan saat penonton membuka episode — dan pemutar menampilkan
+ * "sumber embed tidak dikenali" tanpa petunjuk apa yang salah.
+ */
 export async function addServerAction(formData: FormData) {
   await requireAdmin();
   const slug = str(formData, "animeSlug");
+  const fail = (code: string): never =>
+    redirect(`/admin/anime/${slug}?error=${code}#episode`);
+
+  const type = str(formData, "type", "hls").toLowerCase();
+  const rawUrl = str(formData, "url").trim();
+  const quality = str(formData, "quality", "auto");
+  const label = str(formData, "label", "Server");
+  const note = str(formData, "note") || undefined;
+
+  if (!SERVER_TYPES.has(type)) fail("jenis-server");
+  if (!rawUrl) fail("url-kosong");
+
+  // episodeId datang dari form, jadi bisa saja sudah basi (episode dihapus di
+  // tab lain). Tanpa pemeriksaan ini, insert gagal dengan FOREIGN KEY mentah
+  // dan pengguna hanya melihat halaman error 500.
+  const episodeId = num(formData, "episodeId", 0);
+  const record = getAdminAnime(slug);
+  if (!record || !record.episodeRows.some((e) => e.dbId === episodeId)) {
+    fail("episode-tidak-valid");
+  }
+
+  let url = rawUrl;
+  if (type === "embed") {
+    const normalized = normalizeEmbedUrl(rawUrl);
+    if (!normalized) fail("embed-tak-dikenal");
+    url = normalized as string;
+  } else if (type === "hls") {
+    if (!/\.m3u8(\?|$)/i.test(rawUrl)) fail("hls-bukan-m3u8");
+  } else {
+    // mp4: boleh path relatif (dipasangi CDN) atau URL absolut.
+    if (!/^(https?:\/\/|\/)/i.test(rawUrl)) fail("url-tidak-valid");
+  }
+
   addServer({
-    episodeId: num(formData, "episodeId", 0),
-    label: str(formData, "label", "Server"),
-    type: str(formData, "type", "hls"),
-    url: str(formData, "url"),
-    quality: str(formData, "quality", "auto"),
-    note: str(formData, "note") || undefined,
+    episodeId,
+    label,
+    type,
+    url,
+    quality,
+    note,
   });
   refresh(slug);
   redirect(`/admin/anime/${slug}#episode`);
@@ -300,8 +346,14 @@ export async function deleteServerAction(formData: FormData) {
 export async function addSubtitleAction(formData: FormData) {
   await requireAdmin();
   const slug = str(formData, "animeSlug");
+  const episodeId = num(formData, "episodeId", 0);
+  const record = getAdminAnime(slug);
+  if (!record || !record.episodeRows.some((e) => e.dbId === episodeId)) {
+    redirect(`/admin/anime/${slug}?error=episode-tidak-valid#episode`);
+  }
+
   addSubtitle({
-    episodeId: num(formData, "episodeId", 0),
+    episodeId,
     lang: str(formData, "lang", "id"),
     label: str(formData, "label", "Indonesia"),
     src: str(formData, "src"),
