@@ -4,6 +4,14 @@ import crypto from "node:crypto";
 import { mkdir, stat, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import {
+  deleteObject,
+  isS3Configured,
+  presignObjectUrl,
+  publicObjectUrl,
+  putObject,
+} from "@/lib/s3";
+
 /**
  * Penyimpanan berkas unggahan + tautan bertanda tangan (signed URL).
  *
@@ -12,11 +20,18 @@ import path from "node:path";
  * Itu membuat tautan hasil salin-tempel mati setelah beberapa jam (anti-hotlink
  * sederhana) dan bisa diganti CDN/referer bila nanti pindah ke R2/Bunny.
  *
- * URL tersimpan di database memakai skema `local:<id>`; tanda tangan dibuat
- * saat render (lihat `src/lib/media.ts`), jadi tautan selalu segar.
+ * URL tersimpan di database memakai skema `local:<id>` (disk aplikasi) atau
+ * `r2:<key>` (penyimpanan objek S3-compatible); tanda tangan dibuat saat
+ * render (lihat `src/lib/media.ts`), jadi tautan selalu segar.
+ *
+ * Driver dipilih otomatis: bila `CAPTNIME_S3_*` lengkap → `r2`, kalau tidak →
+ * `local`. `CAPTNIME_STORAGE_DRIVER` bisa memaksa salah satunya.
  */
 
 export const LOCAL_PREFIX = "local:";
+export const REMOTE_PREFIX = "r2:";
+
+export type StorageDriver = "local" | "r2";
 
 /** Umur maksimum tautan yang dibuat saat halaman dirender (6 jam). */
 export const SIGNED_TTL_MS = 6 * 60 * 60 * 1000;
@@ -63,8 +78,33 @@ export function uploadKindOf(name: string): UploadKind | null {
   return null;
 }
 
+export function storageDriver(): StorageDriver {
+  const explicit = process.env.CAPTNIME_STORAGE_DRIVER?.trim().toLowerCase();
+  if (explicit === "local" || explicit === "r2") return explicit;
+  return isS3Configured() ? "r2" : "local";
+}
+
+export function storageDriverLabel(): string {
+  return storageDriver() === "r2" ? "Penyimpanan objek (S3/R2)" : "Disk server";
+}
+
 export function isLocalMedia(url: string): boolean {
   return url.startsWith(LOCAL_PREFIX);
+}
+
+export function isRemoteMedia(url: string): boolean {
+  return url.startsWith(REMOTE_PREFIX);
+}
+
+/** True untuk kedua bentuk simpanan kita (local: maupun r2:). */
+export function isStoredMedia(url: string): boolean {
+  return isLocalMedia(url) || isRemoteMedia(url);
+}
+
+export function remoteMediaKey(url: string): string | null {
+  if (!isRemoteMedia(url)) return null;
+  const key = url.slice(REMOTE_PREFIX.length);
+  return key && !key.startsWith("/") && !key.includes("..") ? key : null;
 }
 
 export function localMediaId(url: string): string | null {
@@ -96,11 +136,21 @@ export async function saveUpload(
 
   const ext = path.extname(filename).toLowerCase();
   const id = `${Date.now().toString(36)}-${crypto.randomUUID()}${ext}`;
-  const dir = uploadDir();
+  const bytes = Buffer.from(await file.arrayBuffer());
 
+  if (storageDriver() === "r2") {
+    const key = `${kind === "video" ? "video" : "subtitle"}/${id}`;
+    try {
+      await putObject(key, new Uint8Array(bytes), mime);
+      return { url: `${REMOTE_PREFIX}${key}`, id, size: bytes.length, mime, filename };
+    } catch {
+      throw new UploadError("berkas-gagal");
+    }
+  }
+
+  const dir = uploadDir();
   try {
     await mkdir(dir, { recursive: true });
-    const bytes = Buffer.from(await file.arrayBuffer());
     await writeFile(path.join(dir, id), bytes, { flag: "wx" });
     return { url: `${LOCAL_PREFIX}${id}`, id, size: bytes.length, mime, filename };
   } catch {
@@ -121,6 +171,30 @@ export async function mediaFile(
     return { path: full, size: info.size, mime };
   } catch {
     return null;
+  }
+}
+
+/**
+ * Hapus media simpanan berdasarkan URL database (`local:<id>` / `r2:<key>`).
+ * Kegagalan diabaikan: pemanggil hanya ingin barisnya hilang.
+ */
+export async function deleteStoredMedia(url: string): Promise<void> {
+  const key = remoteMediaKey(url);
+  if (key) {
+    try {
+      await deleteObject(key);
+    } catch {
+      // Objek sudah tidak ada / penyimpanan sedang tak terjangkau.
+    }
+    return;
+  }
+
+  const id = localMediaId(url);
+  if (!id) return;
+  try {
+    await unlink(path.join(uploadDir(), id));
+  } catch {
+    // Berkas sudah tidak ada — tidak apa-apa.
   }
 }
 
@@ -147,8 +221,24 @@ function signature(id: string, exp: number): string {
   return crypto.createHmac("sha256", mediaSecret()).update(`${id}:${exp}`).digest("hex");
 }
 
-/** Tautan bertanda tangan untuk satu berkas; kedaluwarsa setelah `ttlMs`. */
+/**
+ * Tautan putar untuk media simpanan.
+ *
+ * - `local:<id>` → `/media/<id>?exp=…&sig=…` (route kita sendiri).
+ * - `r2:<key>`   → URL publik CDN bila disetel, kalau tidak presigned GET S3
+ *                  yang kedaluwarsa sama lamanya.
+ */
 export function signMediaUrl(url: string, ttlMs = SIGNED_TTL_MS): string {
+  const key = remoteMediaKey(url);
+  if (key) {
+    const ttlSeconds = Math.max(30, Math.round(ttlMs / 1000));
+    try {
+      return publicObjectUrl(key) ?? presignObjectUrl(key, { expiresIn: ttlSeconds });
+    } catch {
+      return url;
+    }
+  }
+
   const id = localMediaId(url);
   if (!id) return url;
   const exp = Date.now() + ttlMs;

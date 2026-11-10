@@ -3,8 +3,7 @@
 import { normalizeEmbedUrl } from "@/lib/media";
 import {
   UploadError,
-  deleteUpload,
-  localMediaId,
+  deleteStoredMedia,
   maxUploadMb,
   saveUpload,
   uploadKindOf,
@@ -350,8 +349,7 @@ export async function deleteServerAction(formData: FormData) {
   const url = str(formData, "serverUrl");
   deleteServer(id);
   // Berkas unggahan tidak perlu disimpan lagi setelah barisnya hilang.
-  const uploadId = localMediaId(url);
-  if (uploadId) await deleteUpload(uploadId);
+  await deleteStoredMedia(url);
   refresh(slug);
   redirect(`/admin/anime/${slug}#episode`);
 }
@@ -435,8 +433,7 @@ export async function deleteSubtitleAction(formData: FormData) {
   await requireAdmin();
   const slug = str(formData, "animeSlug");
   deleteSubtitle(num(formData, "subtitleId", 0));
-  const uploadId = localMediaId(str(formData, "subtitleSrc"));
-  if (uploadId) await deleteUpload(uploadId);
+  await deleteStoredMedia(str(formData, "subtitleSrc"));
   refresh(slug);
   redirect(`/admin/anime/${slug}#episode`);
 }
