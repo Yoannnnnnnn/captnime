@@ -158,10 +158,10 @@ karena batas bawaan server action hanya 1 MB; kalau Anda menaikkan
 Menghapus server/subtitle dari panel sekaligus menghapus berkasnya dari disk,
 supaya folder unggahan tidak menumpuk sampah.
 
-**Catatan skalabilitas:** penyimpanan lokal ini pas untuk uji dan satu server.
-Untuk produksi, arah yang sudah disiapkan: unggah ke R2/Bunny, lalu ganti
-`local:<id>` dengan URL objek dan buat tautan bertanda tangan dari penyedianya
-(R2 presigned URL / Bunny token auth). Pemutar tidak perlu diubah.
+**Skalabilitas:** driver penyimpanan objek (Cloudflare R2, B2, MinIO, S3)
+sudah tersedia. Isi `CAPTNIME_S3_*` → unggahan otomatis memakai penanda
+`r2:<key>` dan diputar lewat presigned URL / domain CDN, tanpa mengubah
+pemutar. Langkah lengkapnya di **[docs/STORAGE.md](STORAGE.md)**.
 
 **Kalau video tidak muncul:** YouTube menampilkan “Playback on other websites
 has been disabled”. Itu keputusan kanal pemiliknya, bukan kesalahan aplikasi —
