@@ -74,6 +74,10 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export type AuthFieldError = "email" | "password" | "name" | "exists" | "invalid";
 
+export function isValidEmail(value: string): boolean {
+  return EMAIL_RE.test(value.trim());
+}
+
 /* ------------------------------------------------------------------ */
 /* Kode pemulihan (reset kata sandi tanpa email)                       */
 /* ------------------------------------------------------------------ */

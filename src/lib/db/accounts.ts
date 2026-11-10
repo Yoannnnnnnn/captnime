@@ -118,6 +118,22 @@ export function setRecoveryHash(userId: string, hash: string | null): void {
   getDb().prepare(`UPDATE users SET recovery_hash = ? WHERE id = ?`).run(hash, userId);
 }
 
+/**
+ * Ganti alamat email pengguna.
+ *
+ * Verifikasi dikosongkan kembali dan semua token (verify/reset) dihapus:
+ * alamat baru belum terbukti milik pengguna, dan token lama dikirim ke alamat
+ * lama sehingga tidak boleh tetap berlaku.
+ */
+export function updateUserEmail(userId: string, email: string): void {
+  const db = getDb();
+  db.prepare(`UPDATE users SET email = ?, email_verified_at = NULL WHERE id = ?`).run(
+    email.toLowerCase(),
+    userId,
+  );
+  db.prepare(`DELETE FROM email_tokens WHERE user_id = ?`).run(userId);
+}
+
 export function markEmailVerified(userId: string): void {
   getDb()
     .prepare(

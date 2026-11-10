@@ -263,9 +263,11 @@ ponsel.
 
 1. **Belum ada webhook status kirim** (bounce/complaint). Alamat yang selalu
    gagal belum otomatis ditandai; pantau dashboard Mailjet.
-2. **Belum ada ganti alamat email** di `/akun` — karena itu belum ada alur
-   “verifikasi ulang alamat baru”. `clearEmailVerified()` sudah tersedia untuk
-   dipakai saat fitur itu dibuat.
+2. **Ganti alamat email sudah ada** (`/akun` → bagian “Alamat email”), tetapi
+   belum ada masa tenggang: begitu disimpan, verifikasi langsung dikosongkan dan
+   sinkronisasi server berhenti sampai alamat baru diverifikasi. Bila pengguna
+   salah ketik dan tidak bisa membuka alamat itu, ia perlu menggantinya lagi
+   (dengan kata sandi) sebelum kehilangan akses.
 3. **Belum ada verifikasi ulang saat masuk dari perangkat baru.**
 4. **Belum ada antrean/coba-ulang otomatis** bila Mailjet sedang gagal.
    Pengguna cukup menekan “kirim ulang” (dibatasi 6 kali / 15 menit).

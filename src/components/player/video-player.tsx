@@ -22,6 +22,7 @@ import {
 import type { Anime, Episode, StreamServer, Subtitle } from "@/lib/types";
 import { cn, formatDuration } from "@/lib/utils";
 import { saveProgress } from "@/lib/user-store";
+import { embedExternalUrl, embedProviderLabel } from "@/lib/embed";
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 
@@ -31,6 +32,8 @@ interface VideoPlayerProps {
   /** Episode berikutnya (bila ada) untuk auto-next. */
   nextEpisode?: Episode;
   nextHref?: string;
+  /** Server yang dipilih saat halaman dibuka (0-based), mis. dari ?server=2. */
+  initialServerIndex?: number;
 }
 
 export function VideoPlayer({
@@ -38,13 +41,16 @@ export function VideoPlayer({
   episode,
   nextEpisode,
   nextHref,
+  initialServerIndex = 0,
 }: VideoPlayerProps) {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [serverIndex, setServerIndex] = useState(0);
+  const [serverIndex, setServerIndex] = useState(() =>
+    Math.min(Math.max(0, initialServerIndex), Math.max(0, episode.servers.length - 1)),
+  );
   const server: StreamServer | undefined = episode.servers[serverIndex];
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -448,9 +454,26 @@ export function VideoPlayer({
           }}
         />
 
-        <p className="px-1 text-[11px] text-text-3">
-          Sumber ini diputar langsung oleh platform pemiliknya, jadi subtitle dan
-          kualitas diatur lewat tombol di dalam pemutar.
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+          <p className="text-[11px] text-text-3">
+            Diputar langsung oleh {embedProviderLabel(server.url)} — subtitle dan
+            kualitas diatur lewat tombol di dalam pemutar.
+          </p>
+          {embedExternalUrl(server.url) ? (
+            <a
+              href={embedExternalUrl(server.url) as string}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] text-text-3 underline-offset-4 hover:text-gold hover:underline"
+            >
+              Buka di tab baru
+            </a>
+          ) : null}
+        </div>
+
+        <p className="px-1 text-[11px] leading-relaxed text-text-3">
+          Video tidak muncul? Kanal pemiliknya bisa menonaktifkan pemutaran di situs
+          lain. Pilih server lain, atau pakai tautan “Buka di tab baru”.
         </p>
       </div>
     );
