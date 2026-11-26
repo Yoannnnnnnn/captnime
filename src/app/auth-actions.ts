@@ -8,6 +8,7 @@ import {
   deleteOtherSessions,
   deleteUser,
   deleteUserSessions,
+  EMAIL_CHANGE_COOLDOWN_MS,
   findUserByEmail,
   markEmailVerified,
   updateUserEmail,
@@ -16,7 +17,7 @@ import {
   type PublicUser,
 } from "@/lib/db/accounts";
 import { sendResetEmail, sendVerificationEmail } from "@/lib/auth-email";
-import { isEmailConfigured } from "@/lib/email";
+import { emailChangedNotice, isEmailConfigured, sendEmail } from "@/lib/email";
 import {
   SESSION_COOKIE,
   clearAttempts,
@@ -174,7 +175,29 @@ export async function changeEmailAction(formData: FormData) {
   const existing = findUserByEmail(email);
   if (existing && existing.id !== user.id) redirect("/akun?error=email-dipakai");
 
+  // Jeda 24 jam antar pergantian: mencegah alamat akun dipindah-pindah cepat
+  // (mis. oleh sesi yang dibajak) dan memberi waktu pemilik lama bereaksi.
+  if (
+    user.emailChangedAt &&
+    Date.now() - new Date(user.emailChangedAt).getTime() < EMAIL_CHANGE_COOLDOWN_MS
+  ) {
+    redirect("/akun?error=email-terlalu-sering");
+  }
+
   updateUserEmail(user.id, email);
+
+  // Pemberitahuan ke alamat LAMA: kalau perubahan ini bukan oleh pemilik akun,
+  // ia tetap mendapat jejak di kotak masuk yang masih ia pegang.
+  const previousEmail = user.email;
+  await sendEmail({
+    to: previousEmail,
+    toName: user.name,
+    ...emailChangedNotice({
+      name: user.name,
+      newEmail: email,
+      appUrl: process.env.CAPTNIME_APP_URL?.trim() || "http://localhost:3000",
+    }),
+  });
 
   const mail = await sendVerificationEmail({ id: user.id, name: user.name, email });
   const notice = mail.ok ? "dikirim" : mail.skipped ? "belum-aktif" : "gagal";

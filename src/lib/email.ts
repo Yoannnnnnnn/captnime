@@ -223,6 +223,38 @@ function button(href: string, label: string): string {
   return `<p style="margin:20px 0;"><a href="${href}" style="display:inline-block;background:${COLORS.gold};color:#ffffff;text-decoration:none;font-weight:600;font-size:14px;padding:11px 20px;border-radius:8px;">${label}</a></p>`;
 }
 
+/**
+ * Pemberitahuan ke alamat **lama** setelah email akun diganti.
+ *
+ * Ini pengaman: kalau seseorang berhasil membajak sesi, pemilik akun tetap tahu
+ * alamatnya baru saja dipindahkan — dan bisa memakai "lupa sandi" dari alamat
+ * lama bila masih memegang kotak masuknya.
+ */
+export function emailChangedNotice(input: { name: string; newEmail: string; appUrl: string }) {
+  return {
+    subject: "Alamat email akun Captnime Anda baru diubah",
+    html: layout({
+      title: "Alamat email akun Anda berubah",
+      body: `<p style="margin:0;">Halo ${input.name}, alamat email akun Captnime Anda baru saja diganti menjadi <strong>${input.newEmail}</strong>.</p>
+        <p style="margin:0;">Kalau itu memang Anda, tidak ada yang perlu dilakukan — cukup verifikasi alamat baru lewat tautan yang kami kirim ke sana.</p>
+        <p style="margin:0;">Kalau Anda tidak merasa menggantinya, segera atur ulang kata sandi dari halaman masuk, lalu hubungi pengelola situs.</p>
+        ${button(`${input.appUrl}/lupa-sandi`, "Atur ulang kata sandi")}`,
+      footer: `Email ini dikirim ke alamat lama sebagai pemberitahuan keamanan.`,
+    }),
+    text: `Halo ${input.name},
+
+Alamat email akun Captnime Anda baru saja diganti menjadi ${input.newEmail}.
+
+Kalau itu memang Anda, tidak ada yang perlu dilakukan — cukup verifikasi alamat
+baru lewat tautan yang kami kirim ke sana.
+
+Kalau Anda tidak merasa menggantinya, segera atur ulang kata sandi:
+${input.appUrl}/lupa-sandi
+
+— Captnime`,
+  };
+}
+
 export function verificationEmail(input: { name: string; url: string; hours: number }) {
   return {
     subject: "Verifikasi email Captnime Anda",

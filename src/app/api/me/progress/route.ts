@@ -7,7 +7,10 @@ export const dynamic = "force-dynamic";
 const unauthorised = () =>
   NextResponse.json({ error: "Belum masuk" }, { status: 401 });
 
-/** Riwayat tontonan baru disinkronkan setelah email terverifikasi. */
+/**
+ * Sinkronisasi baru aktif setelah email terverifikasi, atau selama masa
+ * tenggang 72 jam setelah alamat email diganti.
+ */
 const unverified = () =>
   NextResponse.json(
     {
@@ -25,7 +28,7 @@ const toInt = (value: unknown, fallback = 0) => {
 export async function PUT(request: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return unauthorised();
-  if (!user.emailVerified) return unverified();
+  if (!user.syncAllowed) return unverified();
 
   let body: Record<string, unknown>;
   try {
@@ -51,7 +54,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return unauthorised();
-  if (!user.emailVerified) return unverified();
+  if (!user.syncAllowed) return unverified();
 
   if (request.nextUrl.searchParams.get("all") === "1") {
     clearProgress(user.id);

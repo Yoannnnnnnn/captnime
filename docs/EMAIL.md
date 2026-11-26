@@ -263,11 +263,11 @@ ponsel.
 
 1. **Belum ada webhook status kirim** (bounce/complaint). Alamat yang selalu
    gagal belum otomatis ditandai; pantau dashboard Mailjet.
-2. **Ganti alamat email sudah ada** (`/akun` → bagian “Alamat email”), tetapi
-   belum ada masa tenggang: begitu disimpan, verifikasi langsung dikosongkan dan
-   sinkronisasi server berhenti sampai alamat baru diverifikasi. Bila pengguna
-   salah ketik dan tidak bisa membuka alamat itu, ia perlu menggantinya lagi
-   (dengan kata sandi) sebelum kehilangan akses.
+2. **Ganti alamat email** ada di `/akun` → “Alamat email”. Perlu kata sandi,
+   jeda 24 jam antar pergantian, masa tenggang sinkronisasi 72 jam, dan dua email
+   terkirim: tautan verifikasi ke alamat baru + pemberitahuan keamanan ke alamat
+   lama. Token kedaluwarsa dibersihkan otomatis setiap kali token baru dibuat.
+   Yang belum ada: konfirmasi dari alamat lama sebelum perubahan berlaku.
 3. **Belum ada verifikasi ulang saat masuk dari perangkat baru.**
 4. **Belum ada antrean/coba-ulang otomatis** bila Mailjet sedang gagal.
    Pengguna cukup menekan “kirim ulang” (dibatasi 6 kali / 15 menit).

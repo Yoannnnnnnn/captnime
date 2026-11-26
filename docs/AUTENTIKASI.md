@@ -119,10 +119,17 @@ berhasil, dan `/lupa-sandi` memberi tahu bahwa pengiriman email belum aktif.
 
 ### Ganti alamat email
 `/akun` → bagian **Alamat email**: perlu kata sandi saat ini. Alamat baru harus
-valid dan belum dipakai akun lain. Setelah tersimpan, `email_verified_at`
-dikosongkan, seluruh token lama dihapus, dan tautan verifikasi dikirim ke alamat
-baru. Sesi tetap aktif agar pengguna tidak terkunci, tetapi sinkronisasi server
-berhenti sampai verifikasi selesai.
+valid dan belum dipakai akun lain. Setelah tersimpan:
+
+- `email_verified_at` dikosongkan dan seluruh token lama dihapus;
+- **masa tenggang 72 jam** dimulai (`email_grace_until`): sinkronisasi tetap
+  berjalan selama jendela ini supaya salah ketik alamat tidak langsung mengunci
+  pengguna dari akunnya sendiri;
+- tautan verifikasi dikirim ke alamat baru, dan **pemberitahuan keamanan**
+  dikirim ke alamat lama (“alamat email akun Anda baru diubah”);
+- alamat berikutnya baru bisa diganti setelah **24 jam** (`email_changed_at`).
+
+Sesi tetap aktif sepanjang proses.
 
 ### Kode pemulihan (cadangan bila email tak bisa dibuka)
 Selain tautan email, tersedia kode sekali pakai:
@@ -186,9 +193,9 @@ soft delete: data benar-benar hilang.
    mendaftar sampai baris lama dibersihkan. Ini konsekuensi wajar dari
    kebijakan lunak, tetapi perlu penanganan (mis. email pembatalan
    kepemilikan) sebelum dibuka luas.
-2. **Ganti alamat email** ada di `/akun` (perlu kata sandi). Verifikasi
-   dikosongkan dan token lama dihapus; belum ada masa tenggang atau
-   pemberitahuan ke alamat lama.
+2. **Ganti alamat email** ada di `/akun` (perlu kata sandi) dengan masa tenggang
+   72 jam, jeda 24 jam antar pergantian, dan pemberitahuan ke alamat lama. Yang
+   belum ada: konfirmasi dua langkah dari alamat lama sebelum perubahan berlaku.
 3. **Belum ada webhook bounce/complaint** dari Mailjet.
 4. **Belum ada login sosial (OAuth)** atau 2FA.
 5. **Belum ada peran**: panel admin masih memakai kata sandi lingkungan

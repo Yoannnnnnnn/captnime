@@ -14,8 +14,20 @@ export interface UserRow {
   password_hash: string;
   recovery_hash: string | null;
   email_verified_at: string | null;
+  email_grace_until: string | null;
+  email_changed_at: string | null;
   created_at: string;
 }
+
+/**
+ * Masa tenggang setelah ganti email (kebijakan verifikasi lunak): sinkronisasi
+ * tetap berjalan 72 jam supaya salah ketik alamat tidak langsung mengunci
+ * pengguna dari akunnya sendiri.
+ */
+export const EMAIL_GRACE_MS = 72 * 60 * 60 * 1000;
+
+/** Jeda minimum sebelum alamat email boleh diganti lagi. */
+export const EMAIL_CHANGE_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
 export interface PublicUser {
   id: string;
@@ -25,6 +37,12 @@ export interface PublicUser {
   emailVerified: boolean;
   /** ISO date saat email terverifikasi, atau null. */
   emailVerifiedAt: string | null;
+  /** Batas akhir masa tenggang setelah ganti email (ISO), atau null. */
+  emailGraceUntil: string | null;
+  /** Kapan alamat email terakhir diganti (ISO), atau null. */
+  emailChangedAt: string | null;
+  /** True bila sinkronisasi boleh jalan: terverifikasi ATAU masih masa tenggang. */
+  syncAllowed: boolean;
   createdAt: string;
 }
 
@@ -54,14 +72,23 @@ interface RawWatchlist {
   added_at: string;
 }
 
-const toPublicUser = (row: UserRow): PublicUser => ({
-  id: row.id,
-  email: row.email,
-  name: row.name,
-  emailVerified: Boolean(row.email_verified_at),
-  emailVerifiedAt: row.email_verified_at ?? null,
-  createdAt: row.created_at,
-});
+const toPublicUser = (row: UserRow): PublicUser => {
+  const emailVerified = Boolean(row.email_verified_at);
+  const graceUntil = row.email_grace_until ?? null;
+  const graceActive = Boolean(graceUntil && new Date(graceUntil).getTime() > Date.now());
+
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    emailVerified,
+    emailVerifiedAt: row.email_verified_at ?? null,
+    emailGraceUntil: graceUntil,
+    emailChangedAt: row.email_changed_at ?? null,
+    syncAllowed: emailVerified || graceActive,
+    createdAt: row.created_at,
+  };
+};
 
 export type EmailTokenPurpose = "verify" | "reset";
 
@@ -127,8 +154,15 @@ export function setRecoveryHash(userId: string, hash: string | null): void {
  */
 export function updateUserEmail(userId: string, email: string): void {
   const db = getDb();
-  db.prepare(`UPDATE users SET email = ?, email_verified_at = NULL WHERE id = ?`).run(
+  const now = Date.now();
+  db.prepare(
+    `UPDATE users SET email = ?, email_verified_at = NULL,
+            email_grace_until = ?, email_changed_at = ?
+      WHERE id = ?`,
+  ).run(
     email.toLowerCase(),
+    new Date(now + EMAIL_GRACE_MS).toISOString(),
+    new Date(now).toISOString(),
     userId,
   );
   db.prepare(`DELETE FROM email_tokens WHERE user_id = ?`).run(userId);
@@ -153,6 +187,17 @@ export function isEmailVerified(userId: string): boolean {
     .prepare(`SELECT email_verified_at FROM users WHERE id = ?`)
     .get(userId) as { email_verified_at: string | null } | undefined;
   return Boolean(row?.email_verified_at);
+}
+
+/**
+ * Hapus token kedaluwarsa. Dipanggil setiap kali token baru dibuat supaya tabel
+ * tidak menumpuk sisa tautan yang sudah mati.
+ */
+export function pruneExpiredEmailTokens(now = Date.now()): number {
+  const result = getDb()
+    .prepare(`DELETE FROM email_tokens WHERE expires_at <= ?`)
+    .run(now) as { changes?: number };
+  return Number(result.changes ?? 0);
 }
 
 export function deleteUser(userId: string): void {

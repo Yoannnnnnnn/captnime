@@ -112,6 +112,11 @@ CREATE TABLE IF NOT EXISTS users (
   recovery_hash  TEXT,
   -- NULL = email belum diverifikasi. Diisi waktu verifikasi berhasil.
   email_verified_at TEXT,
+  -- Masa tenggang setelah ganti email: sinkronisasi tetap jalan sampai waktu ini
+  -- meski alamat baru belum diverifikasi (kebijakan lunak).
+  email_grace_until TEXT,
+  -- Kapan alamat email terakhir diganti (dipakai untuk jeda antar pergantian).
+  email_changed_at  TEXT,
   created_at     TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
