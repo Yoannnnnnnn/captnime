@@ -163,6 +163,12 @@ sudah tersedia. Isi `CAPTNIME_S3_*` → unggahan otomatis memakai penanda
 `r2:<key>` dan diputar lewat presigned URL / domain CDN, tanpa mengubah
 pemutar. Langkah lengkapnya di **[docs/STORAGE.md](STORAGE.md)**.
 
+**Halaman bantuan penonton.** Versi pengguna dari bagian ini ada di
+`/bantuan` — menjelaskan tiga pemeriksaan cepat (muat ulang, ganti server, buka
+di tab baru), tabel gejala → penyebab → solusi, cara memilih server, subtitle,
+dan apa yang perlu dilaporkan. Pemutar menautkannya dari kotak error dan catatan
+embed, dan footer menyebutnya sebagai “Pusat Bantuan”.
+
 **Kalau video tidak muncul:** YouTube menampilkan “Playback on other websites
 has been disabled”. Itu keputusan kanal pemiliknya, bukan kesalahan aplikasi —
 beberapa video pada kanal yang sama mengizinkan semat, sebagian tidak. Pilihan
