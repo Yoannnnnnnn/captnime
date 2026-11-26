@@ -35,7 +35,7 @@ const toInt = (value: unknown, fallback = 0) => {
 export async function POST(request: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Belum masuk" }, { status: 401 });
-  if (!user.emailVerified) {
+  if (!user.syncAllowed) {
     return NextResponse.json(
       {
         error: "verifikasi",

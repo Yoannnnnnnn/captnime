@@ -30,7 +30,7 @@ async function payload(request: NextRequest): Promise<{ slug: string; inList: bo
 export async function POST(request: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return unauthorised();
-  if (!user.emailVerified) return unverified();
+  if (!user.syncAllowed) return unverified();
 
   const data = await payload(request);
   if (!data) return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return unauthorised();
-  if (!user.emailVerified) return unverified();
+  if (!user.syncAllowed) return unverified();
 
   const slug = request.nextUrl.searchParams.get("slug")?.trim();
   if (!slug) return NextResponse.json({ error: "slug wajib" }, { status: 400 });

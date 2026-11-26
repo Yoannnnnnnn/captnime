@@ -89,6 +89,10 @@ const NOTICES: Record<string, { tone: "ok" | "error"; text: string }> = {
     tone: "error",
     text: "Alamat itu sudah dipakai akun lain.",
   },
+  "error=email-terlalu-sering": {
+    tone: "error",
+    text: "Alamat email baru bisa diganti lagi 24 jam setelah perubahan terakhir.",
+  },
   "verifikasi=batas": {
     tone: "error",
     text: "Terlalu sering meminta tautan verifikasi. Coba lagi dalam 15 menit.",
@@ -152,9 +156,26 @@ export default async function AccountPage({
             Email belum diverifikasi
           </p>
           <p className="mt-1 text-[12px] leading-relaxed text-text-2">
-            Akun tetap bisa dipakai untuk menonton. Yang belum aktif hanya sinkronisasi
-            daftar tonton dan riwayat tontonan antar perangkat — datanya masih tersimpan
-            di peramban ini.{" "}
+            {user.syncAllowed && user.emailGraceUntil ? (
+              <>
+                Alamat email baru belum diverifikasi, tetapi <strong>sinkronisasi masih
+                berjalan</strong> sampai{" "}
+                <span className="text-text">
+                  {new Date(user.emailGraceUntil).toLocaleString("id-ID", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}
+                </span>
+                . Setelah itu riwayat & daftar tonton berhenti tersinkron sampai Anda
+                memverifikasi.{" "}
+              </>
+            ) : (
+              <>
+                Akun tetap bisa dipakai untuk menonton. Yang belum aktif hanya
+                sinkronisasi daftar tonton dan riwayat tontonan antar perangkat —
+                datanya masih tersimpan di peramban ini.{" "}
+              </>
+            )}
             {emailStatus.ok ? (
               <>
                 Tautan verifikasi dikirim ke{" "}
@@ -383,8 +404,24 @@ export default async function AccountPage({
             <p className="mt-0.5 text-[12px] leading-relaxed text-text-3">
               Sekarang: <span className="text-text-2">{user.email}</span>
               {user.emailVerified ? " (terverifikasi)" : " (belum diverifikasi)"}. Alamat
-              baru perlu diverifikasi ulang; sinkronisasi server berhenti sampai
-              verifikasi selesai.
+              baru perlu diverifikasi ulang.
+              {user.emailChangedAt ? (
+                <>
+                  {" "}
+                  <span className="block text-[11px] text-text-3">
+                    Terakhir diganti{" "}
+                    {new Date(user.emailChangedAt).toLocaleString("id-ID", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                    . Bisa diganti lagi setelah{" "}
+                    {new Date(
+                      new Date(user.emailChangedAt).getTime() + 24 * 60 * 60 * 1000,
+                    ).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}
+                    .
+                  </span>
+                </>
+              ) : null}
             </p>
 
             <form action={changeEmailAction} className="mt-3 space-y-3">

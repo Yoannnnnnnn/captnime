@@ -80,6 +80,12 @@ function migrate(db: DatabaseSync): void {
   if (!userColumns.some((c) => c.name === "email_verified_at")) {
     db.exec("ALTER TABLE users ADD COLUMN email_verified_at TEXT");
   }
+  if (!userColumns.some((c) => c.name === "email_grace_until")) {
+    db.exec("ALTER TABLE users ADD COLUMN email_grace_until TEXT");
+  }
+  if (!userColumns.some((c) => c.name === "email_changed_at")) {
+    db.exec("ALTER TABLE users ADD COLUMN email_changed_at TEXT");
+  }
 }
 
 export function getDb(): DatabaseSync {

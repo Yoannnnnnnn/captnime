@@ -1,5 +1,6 @@
 import {
   createEmailToken,
+  pruneExpiredEmailTokens,
   type EmailTokenPurpose,
   type PublicUser,
 } from "@/lib/db/accounts";
@@ -31,6 +32,9 @@ async function issue(input: {
   ttlMs: number;
   path: string;
 }): Promise<EmailResult> {
+  // Bersihkan token yang sudah kedaluwarsa supaya tabel tidak menumpuk.
+  pruneExpiredEmailTokens();
+
   // Kalau pengiriman email belum siap, jangan buat token: tanpa email ia tidak
   // akan pernah sampai, dan baris `email_tokens` hanya menumpuk sebagai sampah.
   const status = emailConfigStatus();
