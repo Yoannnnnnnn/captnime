@@ -6,6 +6,7 @@ import { getAdminAnime, getAllGenres } from "@/lib/db/repository";
 import { deleteAnimeAction, syncScheduleAction } from "@/app/admin/actions";
 import { AnimeForm } from "@/components/admin/anime-form";
 import { EpisodeManager } from "@/components/admin/episode-manager";
+import { storageDriverLabel } from "@/lib/storage";
 import { Badge, Notice, Panel, btnDanger, btnGhost } from "@/components/admin/ui";
 
 export const dynamic = "force-dynamic";
@@ -140,7 +141,11 @@ export default async function AdminAnimePage({
         published={record.published}
       />
 
-      <EpisodeManager slug={record.anime.slug} episodes={record.episodeRows} />
+      <EpisodeManager
+        slug={record.anime.slug}
+        episodes={record.episodeRows}
+        storageLabel={storageDriverLabel()}
+      />
 
       <Panel
         index="09"

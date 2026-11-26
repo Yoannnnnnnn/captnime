@@ -14,7 +14,15 @@ import { formatDuration, padEpisode } from "@/lib/utils";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-function EpisodeBlock({ slug, episode }: { slug: string; episode: AdminEpisodeRow }) {
+function EpisodeBlock({
+  slug,
+  episode,
+  storageLabel,
+}: {
+  slug: string;
+  episode: AdminEpisodeRow;
+  storageLabel?: string;
+}) {
   return (
     <details className="sticker-sm group">
       <summary className="flex cursor-pointer list-none flex-wrap items-center gap-3 px-3 py-2.5 text-sm hover:bg-surface-2">
@@ -221,6 +229,15 @@ function EpisodeBlock({ slug, episode }: { slug: string; episode: AdminEpisodeRo
                 Video → server mp4. Subtitle → subtitle Indonesia (default). Berkas
                 disimpan di luar folder publik dan hanya bisa diambil lewat tautan
                 bertanda tangan yang berlaku 6 jam.
+                {storageLabel ? (
+                  <>
+                    {" "}
+                    Penyimpanan aktif: <span className="text-text-2">{storageLabel}</span>
+                    {storageLabel === "Disk server"
+                      ? " — isi CAPTNIME_S3_* untuk memindahkan berkas ke R2."
+                      : "."}
+                  </>
+                ) : null}
               </p>
               <button type="submit" className={btnGhost}>
                 <Plus className="mr-1 inline size-3.5" aria-hidden />
@@ -307,9 +324,11 @@ function EpisodeBlock({ slug, episode }: { slug: string; episode: AdminEpisodeRo
 export function EpisodeManager({
   slug,
   episodes,
+  storageLabel,
 }: {
   slug: string;
   episodes: AdminEpisodeRow[];
+  storageLabel?: string;
 }) {
   const nextNumber =
     episodes.reduce((max, e) => Math.max(max, e.number), 0) + 1;
@@ -328,7 +347,12 @@ export function EpisodeManager({
         ) : (
           <div className="space-y-2">
             {episodes.map((episode) => (
-              <EpisodeBlock key={episode.dbId} slug={slug} episode={episode} />
+              <EpisodeBlock
+                key={episode.dbId}
+                slug={slug}
+                episode={episode}
+                storageLabel={storageLabel}
+              />
             ))}
           </div>
         )}
