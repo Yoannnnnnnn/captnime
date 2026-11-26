@@ -62,6 +62,7 @@ Tidak perlu konfigurasi apa pun — katalog demo sudah terisi.
 | **Katalog** | Pencarian teks, filter genre/status/tipe, 4 opsi pengurutan, paginasi, dan empty-state yang informatif. |
 | **Detail anime** | Backdrop dinamis, poster, sinopsis, tabel informasi (studio/musim/durasi/jadwal), daftar episode dengan progres, anime terkait, tombol daftar tonton. |
 | **Unggahan** | Berkas video/subtitle dari panel admin, disimpan di luar `public/`, disajikan lewat tautan bertanda tangan yang kedaluwarsa 6 jam (`/media/[file]`, dukung `Range`). Driver **penyimpanan objek S3/R2** opsional tanpa SDK ([docs/STORAGE.md](docs/STORAGE.md)) |
+| **Bantuan** | `/bantuan` — panduan penonton (video tidak muncul, tautan 6 jam kedaluwarsa, semat diblokir kanal, subtitle), ditautkan dari footer & pemutar |
 | **Pemutar** | HLS (hls.js), MP4, dan **embed resmi** (YouTube/Vimeo/Dailymotion/Bilibili/OK.ru/VK — divalidasi di server, atribusi platform + tautan “buka di tab baru”), pilih server (`?server=N` untuk tautan langsung), subtitle Indonesia/Inggris on-off, resume dari posisi terakhir, auto-next dengan hitungan, kecepatan 0.75×–2×, PiP, layar penuh, pintasan keyboard, penanganan error + tombol ganti server. |
 | **Jadwal** | Jadwal rilis mingguan, hari ini disorot otomatis. |
 | **Daftar Saya** | Watchlist + riwayat tontonan. Tamu: `localStorage`. Login: tabel `progress`/`watchlist`, tersinkron antar perangkat. |

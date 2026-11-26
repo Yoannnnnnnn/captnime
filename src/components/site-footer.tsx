@@ -57,7 +57,7 @@ export function SiteFooter() {
             </h3>
             <ul className="space-y-2 text-[13px] text-text-2">
               <li><Link href="/my-list" className="hover:text-gold">Daftar Saya</Link></li>
-              <li><span className="cursor-default">Pusat Bantuan</span></li>
+              <li><Link href="/bantuan" className="hover:text-gold">Pusat Bantuan</Link></li>
               <li><span className="cursor-default">Kebijakan Privasi</span></li>
               <li><span className="cursor-default">Ketentuan Layanan</span></li>
             </ul>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Loader2,
@@ -208,7 +209,9 @@ export function VideoPlayer({
     if (!video) return;
     if (video.paused) {
       void video.play().catch(() => {
-        setError("Video gagal diputar. Tekan putar sekali lagi atau ganti server.");
+        setError(
+          "Peramban menolak memulai pemutaran. Tekan putar sekali lagi, atau pilih server lain.",
+        );
       });
     } else {
       video.pause();
@@ -323,7 +326,14 @@ export function VideoPlayer({
     const onPlaying = () => setLoading(false);
     const onError = () => {
       setLoading(false);
-      setError("Gagal memuat video. Coba server lain di bawah pemutar.");
+      // Pesan dibedakan menurut jenis sumber: berkas unggahan paling sering
+      // gagal karena tautan bertanda tangan sudah lewat 6 jam, sedangkan hls
+      // karena manifes/server sumbernya bermasalah.
+      setError(
+        server?.type === "hls"
+          ? "Manifes .m3u8 tidak bisa dimuat — server sumber mungkin sedang mati atau memblokir situs ini. Pilih server lain di bawah pemutar."
+          : "Berkas video tidak bisa diambil. Kalau ini berkas unggahan, tautannya mungkin sudah kedaluwarsa (berlaku 6 jam) — muat ulang halaman lalu tekan putar.",
+      );
     };
     const onEnded = () => {
       setIsPlaying(false);
@@ -353,7 +363,7 @@ export function VideoPlayer({
       video.removeEventListener("error", onError);
       video.removeEventListener("ended", onEnded);
     };
-  }, [anime.slug, episode.number, episode.duration, nextHref, persist, pokeControls]);
+  }, [anime.slug, episode.number, episode.duration, nextHref, persist, pokeControls, server?.type]);
 
   /* Auto-next countdown */
   useEffect(() => {
@@ -473,7 +483,10 @@ export function VideoPlayer({
 
         <p className="px-1 text-[11px] leading-relaxed text-text-3">
           Video tidak muncul? Kanal pemiliknya bisa menonaktifkan pemutaran di situs
-          lain. Pilih server lain, atau pakai tautan “Buka di tab baru”.
+          lain. Pilih server lain, atau pakai tautan “Buka di tab baru”.{" "}
+          <Link href="/bantuan" className="underline-offset-4 hover:text-gold hover:underline">
+            Panduan bantuan
+          </Link>
         </p>
       </div>
     );
@@ -550,6 +563,12 @@ export function VideoPlayer({
             <div className="max-w-sm">
               <p className="text-sm font-bold text-white">Tidak bisa memutar video</p>
               <p className="mt-1 text-xs leading-relaxed text-text-2">{error}</p>
+              <Link
+                href="/bantuan"
+                className="mt-1 inline-block text-[11px] text-text-3 underline-offset-4 hover:text-gold hover:underline"
+              >
+                Kenapa video tidak muncul?
+              </Link>
               <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
                 <button
                   type="button"
